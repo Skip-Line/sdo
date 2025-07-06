@@ -1,0 +1,64 @@
+---
+- name: Create mount points
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ sdo_user }}"
+    group: "{{ sdo_user }}"
+    mode: '0755'
+  loop: "{{ mount_points }}"
+
+- name: Get block device info in JSON
+  ansible.builtin.command: lsblk -b -J -o NAME,SIZE,MOUNTPOINT,TYPE
+  register: lsblk_output
+
+- name: Parse JSON output
+  set_fact:
+    lsblk_json: "{{ lsblk_output.stdout | from_json }}"
+
+- name: Filter and sort unmounted NVMe disks > 800GB
+  set_fact:
+    nvme_disks_over_800gb: >-
+      {{
+        lsblk_json.blockdevices
+        | selectattr('name', 'search', '^nvme')
+        | selectattr('type', 'equalto', 'disk')
+        | selectattr('mountpoint', 'equalto', none)
+        | selectattr('size', '>', 800 * 1024 * 1024 * 1024)
+        | sort(attribute='size', reverse=true)
+        | list
+      }}
+
+- name: Handle formatting and mounting
+  block:
+    - name: Format disks to ext4
+      filesystem:
+        fstype: ext4
+        dev: "/dev/{{ item.name }}"
+      loop: "{{ nvme_disks_over_800gb }}"
+    
+    - name: Get disks UUID
+      command: blkid -s UUID -o value /dev/{{ item.name }}
+      register: disk_uuids
+      loop: "{{ nvme_disks_over_800gb }}"
+
+    - name: Mount the devices
+      mount:
+        path: "{{ mount_points[idx].path }}"
+        src: "/dev/disk/by-uuid/{{ disk_uuids.results[idx].stdout }}"
+        fstype: ext4
+        state: mounted
+        opts: defaults,noatime
+      loop: "{{ range(0, [disk_uuids.results | length, mount_points | length] | min) | list }}"
+      loop_control:
+        loop_var: idx
+
+    # - name: Create mount entries in /etc/fstab
+    #   lineinfile:
+    #     path: /etc/fstab
+    #     line: "UUID={{disk_uuids.results[idx].stdout}} {{ mount_points[idx].path }} ext4 defaults noatime 0 0"
+    #   loop: "{{ range(0, [disk_uuids.results | length, mount_points | length] | min) | list }}"
+    #   loop_control:
+    #     loop_var: idx
+
+  when: nvme_disks_over_800gb | length > 0

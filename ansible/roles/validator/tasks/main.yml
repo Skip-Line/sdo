@@ -1,0 +1,14 @@
+---
+- import_tasks: get_agave_and_firedancer_versions.yml
+
+- import_tasks: install_agave.yml
+  when: validator_type == 'Agave'
+- import_tasks: install_firedancer.yml
+  when: validator_type == 'Firedancer'
+- import_tasks: install_jito.yml
+  when: validator_type == 'Jito' or validator_type == 'Firedancer'
+- import_tasks: setup_unstaked_identity.yml
+- import_tasks: setup_systemd_service.yml
+- import_tasks: start_systemd_service.yml
+
+

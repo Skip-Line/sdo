@@ -1,0 +1,26 @@
+---
+- name: Create user {{ sdo_user }}
+  user:
+    name: "{{ sdo_user }}"
+    comment: "SDO User for Validator Operations"
+    groups: sudo
+    shell: /bin/bash
+    generate_ssh_key: true
+    state: present
+
+- name: Add {{ sdo_user }} to sudoers with NOPASSWD
+  lineinfile:
+    path: "/etc/sudoers.d/{{sdo_user}}-nopasswd"
+    state: present
+    line: "{{sdo_user}} ALL=(ALL) NOPASSWD:ALL"
+    create: yes
+    validate: 'visudo -cf %s'
+
+- name: Add ssh public key for sdo user
+  authorized_key:
+    user: sdo
+    state: present
+    key: "{{ lookup('file', ansible_ssh_private_key_file ~ '.pub') }}"
+
+
+

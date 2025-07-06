@@ -1,0 +1,22 @@
+---
+- name: Create logrotate directory
+  ansible.builtin.file:
+    path: /etc/logrotate.d
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Create logrotate config
+  copy:
+    dest: /etc/logrotate.d/solana
+    content: |
+      /home/{{ sdo_user }}/solana-validator.log {
+        rotate 7
+        daily
+        missingok
+        postrotate
+          systemctl kill -s USR1 {{ sdo_user }}.service
+        endscript
+      }
+  notify: Reload logrotate

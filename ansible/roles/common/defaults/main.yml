@@ -1,0 +1,26 @@
+---
+common_packages:
+  - curl
+  - wget
+  - git
+  - vim
+  - ufw
+  - fail2ban
+  - cpufrequtils
+
+build_tools:
+  - build-essential
+  - libssl-dev
+  - libudev-dev
+  - pkg-config
+  - zlib1g-dev
+  - llvm
+  - clang
+  - cmake
+  - make
+  - libprotobuf-dev
+  - protobuf-compiler
+  - libclang-dev
+
+rust_url: "https://sh.rustup.rs"
+rust_fd_version: "1.84.1"

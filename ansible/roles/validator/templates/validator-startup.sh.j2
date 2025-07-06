@@ -1,0 +1,45 @@
+#!/bin/bash
+exec agave-validator \
+--identity /home/{{ sdo_user }}/identity.json \
+--vote-account {{ hostvars[inventory_hostname].validator_vote_key }} \
+--log /home/{{ sdo_user }}/solana-validator.log \
+--ledger /mnt/ledger \
+--accounts /mnt/accounts \
+--snapshots /mnt/snapshots \
+{% if validator_type == "Agave" %}
+--entrypoint entrypoint.testnet.solana.com:8001 \
+--entrypoint entrypoint2.testnet.solana.com:8001 \
+--entrypoint entrypoint3.testnet.solana.com:8001 \
+--known-validator 5D1fNXzvv5NjV1ysLjirC4WY92RNsVH18vjmcszZd8on \
+--known-validator 7XSY3MrYnK8vq693Rju17bbPkCN3Z7KvvfvJx4kdrsSY \
+--known-validator Ft5fbkqNa76vnsjYNwjDZUXoTWpP7VYm3mtsaQckQADN \
+--known-validator 9QxCLckBiJc783jnMvXZubK4wH86Eqqvashtrwvcsgkv \
+--expected-genesis-hash 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY \
+--expected-shred-version 9065 \
+--expected-bank-hash 4oMrSXsLTiCc1X7S27kxSfGVraTCZoZ7YTy2skEB9bPk \
+{% else %}
+--entrypoint entrypoint.mainnet-beta.solana.com:8001 \
+--entrypoint entrypoint2.mainnet-beta.solana.com:8001 \
+--entrypoint entrypoint3.mainnet-beta.solana.com:8001 \
+--entrypoint entrypoint4.mainnet-beta.solana.com:8001 \
+--entrypoint entrypoint5.mainnet-beta.solana.com:8001 \
+--known-validator Certusm1sa411sMpV9FPqU5dXAYhmmhygvxJ23S6hJ24 \
+--known-validator 7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2 \
+--known-validator GdnSyH3YtwcxFvQrVVJMm1JhTS4QVX7MFsX56uJLUfiZ \
+--known-validator CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S \
+--expected-genesis-hash 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d \
+--expected-shred-version 50093 \
+--tip-payment-program-pubkey T1pyyaTNZsKv2WcRAB8oVnk93mLJw2XzjtVYqCsaHqt \
+--tip-distribution-program-pubkey 4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7 \
+--merkle-root-upload-authority GZctHpWXmsZC1YHACTGGcHhYxjdRqQvTpYkb9LMvxDib \
+--commission-bps {{ hostvars[inventory_hostname].jito_commission }} \
+--relayer-url http://{{ hostvars[inventory_hostname].jito_region }}.mainnet.relayer.jito.wtf:8100 \
+--block-engine-url https://{{ hostvars[inventory_hostname].jito_region }}.mainnet.block-engine.jito.wtf \
+{% endif %}
+--only-known-rpc \
+--dynamic-port-range {{ validator_port_start }}-{{ validator_port_end }} \
+--rpc-port {{ rpc_port }} \
+--use-snapshot-archives-at-startup when-newest \
+--wal-recovery-mode skip_any_corrupted_record \
+--no-port-check \
+--limit-ledger-size

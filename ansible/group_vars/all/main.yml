@@ -1,0 +1,8 @@
+---
+sdo_user: "sdo"
+ssh_port: 22
+validator_port_start: 8000
+validator_port_end: 8020
+rpc_port: 8899
+fd_validator_port_start: 8900
+fd_validator_port_end: 9000

@@ -1,0 +1,81 @@
+{
+  "name": "@skipline/sdo",
+  "description": "A CLI tool to manage Solana validators",
+  "version": "0.0.9",
+  "author": "skipline.xyz",
+  "bin": {
+    "sdo": "./bin/run.js"
+  },
+  "bugs": "https://github.com/skip-line/sdo/issues",
+  "dependencies": {
+    "@inquirer/prompts": "^7.5.3",
+    "@oclif/core": "^4",
+    "@oclif/plugin-help": "^6",
+    "@oclif/plugin-plugins": "^5",
+    "yaml": "^2.8.0",
+    "yocto-spinner": "^1.0.0"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^1",
+    "@oclif/prettier-config": "^0.2.1",
+    "@oclif/test": "^4",
+    "@types/chai": "^4",
+    "@types/mocha": "^10",
+    "@types/node": "^18",
+    "chai": "^4",
+    "eslint": "^9",
+    "eslint-config-oclif": "^6",
+    "eslint-config-prettier": "^10",
+    "mocha": "^10",
+    "oclif": "^4",
+    "shx": "^0.3.3",
+    "ts-node": "^10",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "./bin",
+    "./dist",
+    "./oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/skip-line/sdo",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "type": "module",
+  "oclif": {
+    "bin": "sdo",
+    "dirname": "sdo",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins"
+    ],
+    "topicSeparator": " ",
+    "topics": {
+      "validator": {
+        "description": "Manage Solana validators",
+        "commands": [
+          "validator:create",
+          "validator:provision",
+          "validator:create-vote-account",
+          "validator:set--active-identity"
+        ]
+      }
+    }
+  },
+  "repository": "skip-line/sdo",
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "eslint",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "posttest": "npm run lint",
+    "prepack": "oclif manifest && cp -r ./ansible ./dist/",
+    "test": "mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "types": "dist/index.d.ts"
+}

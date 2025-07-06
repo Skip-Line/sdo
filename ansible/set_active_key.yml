@@ -1,0 +1,41 @@
+---
+- name: Set active key for validator
+  become: true
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    block:
+      - name: Get the validator's identity key
+        become: false
+        delegate_to: localhost
+        slurp:
+          path: "/home/{{ sdo_user }}/keys/{{ hostvars[inventory_name].validator_identity_key }}.json"
+        register: identity_key
+
+      - name: Set the validator's identity key
+        shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger set-identity"
+        args:
+          stdin: "{{ identity_key.content | b64decode }}"
+
+      - name: Add authorized voter account
+        shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger authorized-voter add"
+        args:
+          stdin: "{{ identity_key.content | b64decode }}" 
+    when: validator_type in ['Agave', 'Jito']
+
+    block:
+      - name: Copy key to validator home
+        copy:
+          src: "/home/{{ sdo_user }}/keys/{{ hostvars[inventory_name].validator_identity_key }}.json"
+          dest: "/home/{{ sdo_user }}/active-identity.json"
+          owner: "{{ sdo_user }}"
+          group: "{{ sdo_user }}"
+          mode: '0600'
+      
+      - name: Set active key for firedancer
+        shell: /home/{{ sdo_user }}/firedancer/build/native/gcc/bin/fdctl set-identity --config /home/{{ sdo_user }}/fd-config.toml /home/{{ sdo_user }}/active-identity.json
+
+      - name: Add authorized voter account
+        shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger authorized-voter add /home/{{ sdo_user }}/active-identity.json"
+    when: validator_type == 'Firedancer'

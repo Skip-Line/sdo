@@ -1,0 +1,14 @@
+---
+- name: Copy service file Agave or Jito
+  template:
+    src: "{{ sdo_user }}.service.j2"
+    dest: "/etc/systemd/system/{{ sdo_user }}.service"
+  when: validator_type in ['Agave', 'Jito']
+  notify: Reload systemd
+
+- name: Copy service file Firedancer
+  template:
+    src: "firedancer.service.j2"
+    dest: "/etc/systemd/system/firedancer.service"
+  notify: Reload systemd
+  when: validator_type == 'Firedancer'

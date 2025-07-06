@@ -1,0 +1,50 @@
+---
+- name: Set default policy to deny
+  ufw:
+    state: enabled
+    direction: incoming
+    policy: deny
+
+- name: Allow SSH from specific ips
+  ufw:
+    port: "{{ ssh_port }}"
+    protocol: tcp
+    rule: allow
+    src: "{{ item }}"
+  with_items: "{{ allowed_ssh_ips}}"
+  when: allowed_ssh_ips is defined and allowed_ssh_ips | length > 0
+
+- name: Allow SSH from all IPs if specific IPs arent there
+  ufw:
+    port: "{{ ssh_port }}"
+    protocol: tcp
+    rule: allow
+  when: allowed_ssh_ips is not defined or allowed_ssh_ips | length == 0
+
+- name: Allow TCP range for validator
+  ufw:
+    rule: allow
+    proto: "tcp"
+    port: "{{ validator_port_start }}:{{ validator_port_end }}"
+
+- name: Allow UDP range for validator
+  ufw:
+    rule: allow
+    proto: "udp"
+    port: "{{ validator_port_start }}:{{ validator_port_end }}"
+
+
+- name: Allow TCP range for Firedancer
+  ufw:
+    rule: allow
+    proto: "tcp"
+    port: "{{ fd_validator_port_start }}:{{ fd_validator_port_end }}"
+  when: validator_type == 'Firedancer'
+
+- name: Allow UDP range for Firedancer
+  ufw:
+    rule: allow
+    proto: "udp"
+    port: "{{ fd_validator_port_start }}:{{ fd_validator_port_end }}"
+  when: validator_type == 'Firedancer'
+    

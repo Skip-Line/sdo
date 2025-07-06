@@ -1,0 +1,13 @@
+---
+- name: Install common packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ common_packages }}"
+ 
+
+- name: Install build tools
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ build_tools }}"

@@ -1,0 +1,21 @@
+---
+- name: Install latest SSH server and client
+  apt:
+    name: "{{ item.key }}"
+    state: "{{ item.value }}"
+    cache_valid_time: 3600
+  loop: "{{ sshd_packages | dict2items }}"
+
+- name: Create a secure sshd_config
+  template:
+    src: "{{ sshd_config }}"
+    dest: /etc/ssh/sshd_config
+    mode: "0600"
+    validate: "/usr/sbin/sshd -T -f %s"
+  notify: restart ssh
+
+- name: Create a secure ssh_config
+  template:
+    src: "{{ ssh_config }}"
+    dest: /etc/ssh/ssh_config
+    mode: "0644"

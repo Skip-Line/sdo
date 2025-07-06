@@ -1,0 +1,7 @@
+---
+- import_tasks: install_packages.yml
+- import_tasks: install_rust.yml
+- import_tasks: setup_ufw.yml
+- import_tasks: setup_logrotate.yml
+- import_tasks: tune_system.yml
+- import_tasks: disable_swap.yml

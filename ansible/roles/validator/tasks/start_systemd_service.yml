@@ -1,0 +1,26 @@
+---
+- name: Fix permissions for mnt
+  file:
+    path: /mnt
+    owner: "{{ sdo_user }}"
+    group: "{{ sdo_user }}"
+    recurse: true
+
+- name: Set permissions for /mnt as required by firedancer
+  file:
+    path: /mnt
+    mode: '0700'
+
+- name: Start Agave or Jito service
+  systemd:
+    service: "{{ sdo_user }}.service"
+    state: started
+    enabled: true
+  when: validator_type in ['Agave', 'Jito']
+
+- name: Start Firedancer service
+  systemd:
+    service: "firedancer.service"
+    state: started
+    enabled: true
+  when: validator_type == 'Firedancer'

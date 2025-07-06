@@ -1,0 +1,24 @@
+---
+- name: Download rustup installer
+  become: false
+  get_url:
+    url: "{{ rust_url }}"
+    dest: /tmp/rustup-init.sh
+    mode: '0755'
+
+- name: Install rustup
+  become: false
+  shell: /tmp/rustup-init.sh -y --default-toolchain {{ rust_fd_version }}
+  when: validator_type == 'Firedancer'
+
+- name: Install rustup
+  become: false
+  shell: /tmp/rustup-init.sh -y
+  when: validator_type != 'Firedancer'
+
+- name: Reload path
+  become: false
+  shell: . /home/{{ sdo_user }}/.cargo/env
+
+- name: Install rustfmt
+  shell: sudo -iu {{ sdo_user }} bash -c "rustup component add rustfmt"

@@ -1,0 +1,10 @@
+---
+- name: Reload sysctl
+  ansible.builtin.command: sysctl -p
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Reload logrotate
+  ansible.builtin.command: logrotate -f /etc/logrotate.conf

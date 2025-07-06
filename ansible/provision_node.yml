@@ -1,0 +1,10 @@
+---
+- name: Provision The Validator Node
+  hosts: all
+  become: true
+  gather_facts: false
+
+  roles:
+    - { role: common, tags: ['common']}
+    - { role: disks, tags: ['disks']}
+    - { role: validator, tags: ['validator']}

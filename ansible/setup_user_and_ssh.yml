@@ -1,0 +1,7 @@
+- name: Create specific user sdo for Validator OPS and setup SSH
+  hosts: all
+  become: true
+
+  roles:
+    - user
+    - sshd

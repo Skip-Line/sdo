@@ -1,0 +1,24 @@
+---
+- name: Get install script for Agave
+  become: false
+  get_url:
+    url: "{{ agave_install_script_url }}"
+    dest: /tmp/agave_install.sh
+    mode: '0755'
+
+- name: Install Agave
+  become: false
+  shell: /tmp/agave_install.sh
+
+- name: Update agave
+  shell: sudo -iu {{ sdo_user }} bash -c "agave-install update"
+
+- name: Copy validator startup script
+  template:
+    src: validator-startup.sh.j2
+    dest: /home/{{ sdo_user }}/validator-startup.sh
+    mode: '0755'
+    owner: "{{ sdo_user }}"
+    group: "{{ sdo_user }}"
+    
+    

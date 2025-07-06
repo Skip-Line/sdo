@@ -1,0 +1,40 @@
+---
+- name: Get latest Jito version
+  uri:
+    url: "https://api.github.com/repos/jito-foundation/jito-solana/releases?per_page=10"
+    return_content: true
+  register: jito_version_response
+
+- set_fact:
+    jito_version: >-
+      {{ 
+      
+        (jito_version_response.json 
+          | selectattr('name', 'search', group_names[0], ignorecase=True)
+          | map(attribute='tag_name')
+          | list | first)
+              
+      }}
+
+- name: Download Jito install script
+  become: false
+  get_url:
+    url: "https://release.jito.wtf/{{ jito_version }}/install"
+    dest: /tmp/jito_install.sh
+    mode: '0755'
+
+- name: Install Jito
+  become: false
+  shell: /tmp/jito_install.sh
+
+- name: Update Jito if we installed outdated
+  shell: sudo -iu {{ sdo_user }} bash -c "agave-install update"
+
+- name: Copy validator startup script
+  template:
+    src: validator-startup.sh.j2
+    dest: /home/{{ sdo_user }}/validator-startup.sh
+    mode: '0755'
+    owner: "{{ sdo_user }}"
+    group: "{{ sdo_user }}"
+  when: validator_type == 'Jito'

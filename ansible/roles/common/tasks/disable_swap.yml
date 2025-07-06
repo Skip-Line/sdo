@@ -1,0 +1,16 @@
+---
+- name: Get active swaps
+  shell: swapon --show --noheadings --output NAME | awk '{print $1}'
+  register: active_swaps
+
+- name: Disable active swaps
+  command: swapoff {{ item }}
+  loop: "{{ active_swaps.stdout_lines }}"
+  when: active_swaps.stdout_lines | length > 0
+
+- name: Remove active swaps from /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    state: absent
+    regexp: ".*swap.*"
+  when: active_swaps.stdout_lines | length > 0

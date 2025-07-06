@@ -1,0 +1,2 @@
+---
+agave_install_script_url: "https://release.anza.xyz/v{{ agave_version }}/install"

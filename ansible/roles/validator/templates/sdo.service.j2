@@ -1,0 +1,22 @@
+[Unit]
+Description=Solana Validator
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+User={{ sdo_user }}
+LogRateLimitIntervalSec=0
+Type=simple
+Restart=always
+RestartSec=1
+Environment=PATH=/home/{{ sdo_user }}/.local/share/solana/install/active_release/bin
+WorkingDirectory=/home/{{ sdo_user }}
+{% if validator_type == 'Agave' %}
+Environment=SOLANA_METRICS_CONFIG=host=https://metrics.solana.com:8086,db=tds,u=testnet_write,p=c4fa841aa918bf8274e3e2a44d77568d9861b3ea
+{% else %}
+Environment=SOLANA_METRICS_CONFIG=host=https://metrics.solana.com:8086,db=mainnet-beta,u=mainnet-beta_write,p=password
+{% endif %}
+ExecStart=/home/{{ sdo_user }}/validator-startup.sh
+
+[Install]
+WantedBy=multi-user.target
