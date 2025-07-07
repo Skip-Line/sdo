@@ -3,7 +3,7 @@ sdo
 
 A CLI tool which enables operators of Solana Validators to create new or manage existing validators.
 
-## PREREQUISTES
+## PREREQUISITES
 
 ### OS
 Linux or MacOSX. For Windows, kindly use [WSL2 for Windows](https://learn.microsoft.com/en-us/windows/wsl/install)
@@ -12,7 +12,7 @@ Linux or MacOSX. For Windows, kindly use [WSL2 for Windows](https://learn.micros
 
 * [NodeJS](https://nodejs.org/en/download)
 * [Python 3](https://www.python.org/downloads/)
-* [Asnbile](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+* [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 * [Solana](https://solana.com/ru/docs/intro/installation)
 
 ### INTRO
