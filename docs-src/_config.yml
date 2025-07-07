@@ -11,4 +11,14 @@ defaults:
     
 heading_anchors: true
 enable_copy_code_button: true
-# Disable blog features
+
+exclude:
+  - README.md
+  - LICENSE
+  - .github
+  - .gitignore
+  - .DS_Store
+  - node_modules/
+  - vendor/
+  - src/
+  - dist/
