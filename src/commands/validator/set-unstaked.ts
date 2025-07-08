@@ -7,7 +7,7 @@ export default class ValidatorSetUnstaked extends Command {
   static override args = {
 
   }
-  static override description = 'describe the command here'
+  static override description = 'Set validator identity to unstaked'
   static override examples = [
     '<%= config.bin %> <%= command.id %>',
   ]
