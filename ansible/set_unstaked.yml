@@ -1,0 +1,21 @@
+---
+- name: Set validator key to unstaked
+  hosts: all
+  become: true
+  tasks:
+    - name: Make sure identity.json links to unstaked identity
+      ansible.builtin.file:
+        src: ~/unstaked-identity.json
+        dest: ~/identity.json
+        state: link
+        owner: "{{ sdo_user }}"
+        group: "{{ sdo_user }}"
+
+    - name: Set validator key to unstaked
+      command: > 
+        sudo -iu {{ sdo_user }} bash -c "source ~/.profile && agave-validator -l /mnt/ledger set-identity ~/identity.json"
+      when: validator_type in ['Agave', 'Jito']
+
+    - name: Set validator key to unstaked
+      command: /home/{{ sdo_user }}/firedancer/build/native/gcc/bin/fdctl set-identity --config /home/{{ sdo_user }}/fd-config.toml /home/{{ sdo_user }}/identity.json
+      when: validator_type == "Firedancer"

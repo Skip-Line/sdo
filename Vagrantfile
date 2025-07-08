@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "cloud-image/ubuntu-24.04"
+  # config.vm.box = "base"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  config.vm.network "private_network", ip: "192.168.33.10"
+  # config.vm.network "private_network", ip: "192.168.33.10"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -56,13 +56,7 @@ Vagrant.configure("2") do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-    vb.memory = "4096"
-  end
+  
   #
   # View the documentation for the provider you are using for more
   # information on available options.
@@ -74,7 +68,19 @@ Vagrant.configure("2") do |config|
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
-  config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "ansible/create_sdo_user.yml"
+  config.vm.define "box1" do |box1|
+    box1.vm.box = "cloud-image/ubuntu-24.04"
+    box1.vm.network "private_network", ip: "192.168.33.10"
+    box1.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+    end
+  end
+
+  config.vm.define "box2" do |box2|
+    box2.vm.box = "cloud-image/ubuntu-24.04"
+    box2.vm.network "private_network", ip: "192.168.33.11"
+    box2.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048" 
+    end 
   end
 end

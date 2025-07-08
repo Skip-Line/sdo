@@ -29,17 +29,6 @@ export default class ValidatorCreate extends Command {
   public async run(): Promise<void> {
     const { flags } = await this.parse(ValidatorCreate)
 
-    let network = flags.network
-    if (!network) {
-      network = await select({
-        message: 'What is the validator network?',
-        choices: ['testnet', 'mainnet'],
-      })
-    }
-    if (!network) {
-      this.error('Network is required')
-    }
-
     let sshUser = flags.user
     if (!sshUser) {
       sshUser = await input({
@@ -77,6 +66,17 @@ export default class ValidatorCreate extends Command {
     try {
       await exec(`ansible --ssh-common-args='-o StrictHostKeyChecking=no' -i ${ip}, -u ${sshUser} --private-key=${key} -m ping all`)
       spinner.stop('SSH connection established successfully')
+
+      let network = flags.network
+      if (!network) {
+        network = await select({
+          message: 'What is the validator network?',
+          choices: ['testnet', 'mainnet'],
+        })
+      }
+      if (!network) {
+        this.error('Network is required')
+      }
 
       let validatorType, jitoCommission, jitoRegion, commission;
       if (network === 'testnet') {

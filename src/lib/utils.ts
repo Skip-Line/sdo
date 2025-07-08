@@ -47,11 +47,17 @@ export function runAnsiblePlaybook(playbookName: string, network: string, limit:
         if (code !== 0) {
             console.error(`Failed with code ${code}`);
         } else {
-            console.log('✅ Node provisioned successfully');
-            console.info('Kindly run if you haven\'t created a vote account');
-            console.info(`sdo validator create-vote-account -n ${network} -p ${limit}`)
-            console.info(`If vote account exists or new is created, kindly run:`)
-            console.info(`sdo validator set-active-identity -n ${network} -p ${limit}`)
+            if (playbookName === "provision.yml") {
+                console.log('✅ Node provisioned successfully');
+                console.info('Kindly run if you haven\'t created a vote account');
+                console.info(`sdo validator create-vote-account -n ${network} -p ${limit}`)
+                console.info(`If vote account exists or new is created, kindly run after the node has caught up:`)
+                console.info(`sdo validator set-active-identity -n ${network} -p ${limit}`)
+            } else if (playbookName === "set_unstaked.yml") {
+                console.log('✅ Validator is set to unstaked key');
+            } else {
+                console.log('✅ Task executed successfully');
+            }
         }
     });
 }
