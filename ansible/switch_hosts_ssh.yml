@@ -1,0 +1,45 @@
+---
+- name: Switching validators using SSH
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - set_fact:
+        active_host: "{{ play_hosts[0] }}"
+        backup_host: "{{ play_hosts[1] }}"
+
+    - name: Create Tower directory on localhost
+      become: false
+      file:
+        path: ~/.{{ sdo_user }}/tower
+        state: directory
+        recurse: yes
+      delegate_to: localhost
+
+
+    - name: Download tower file from active host
+      fetch:
+        src: /mnt/ledger/tower-1_9-{{ active_host}}.bin
+        dest: ~/.{{ sdo_user }}/tower/tower-1_9-{{ active_host}}.bin
+        flat: yes
+      when: inventory_hostname == active_host
+
+    - name: Upload tower file to backup host
+      copy:
+        src: ~/.{{ sdo_user }}/tower/tower-1_9-{{ active_host}}.bin
+        dest: /mnt/ledger/tower-1_9-{{ active_host }}.bin
+        owner: "{{ sdo_user }}"
+        group: "{{ sdo_user }}"
+      when: inventory_hostname == backup_host
+
+  import_playbook: set_unstaked.yml
+  when: inventory_hostname == active_host
+  
+  import_playbook: set_active_key.yml
+  when: inventory_hostname == backup_host
+
+      
+
+    
+          

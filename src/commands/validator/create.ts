@@ -1,9 +1,9 @@
 import { Args, Command, Flags } from '@oclif/core'
 import { input, select, confirm, password } from '@inquirer/prompts'
 import { promisify } from 'util'
-import { exec as execCallback } from 'child_process'
+import { exec as execCallback, spawn, spawnSync } from 'child_process'
 import yoctoSpinner from 'yocto-spinner'
-import { createVoteAccount, getInventoryItem, moveFile, runAnsiblePlaybook, runSdoUserPlaybook, writeInventoryFile } from "../../lib/utils.js"
+import { createVoteAccount, getAnsibleCmdPath, getInventoryItem, moveFile, runAnsiblePlaybook, runSdoUserPlaybook, writeInventoryFile } from "../../lib/utils.js"
 import { SDO_HOME } from '../../lib/constants.js'
 import { statSync } from 'fs'
 import { rootPathToAnsible } from '../../lib/constants.js'
@@ -29,16 +29,6 @@ export default class ValidatorCreate extends Command {
   public async run(): Promise<void> {
     const { flags } = await this.parse(ValidatorCreate)
 
-    let sshUser = flags.user
-    if (!sshUser) {
-      sshUser = await input({
-        message: 'What is the SSH user to connect as?',
-        default: "root"
-      })
-    }
-    if (sshUser.trim() === '') {
-      this.error('SSH user is required')
-    }
 
     let ip = flags.ip
     if (!ip) {
@@ -50,21 +40,49 @@ export default class ValidatorCreate extends Command {
       this.error('IP address is required')
     }
 
-    let key = flags.key
-    if (!key) {
-      key = await input({
-        message: 'What is the path to the SSH private key?',
-        default: '~/.ssh/id_rsa',
+    let sshUser = flags.user
+    if (!sshUser) {
+      sshUser = await input({
+        message: 'What is the SSH user to connect as?',
+        default: "root"
       })
     }
-    if (key.trim() === '') {
-      this.error('SSH private key path is required')
+    if (sshUser.trim() === '') {
+      this.error('SSH user is required')
+    }
+
+    let authMethod: string = await select({
+      message: 'How do you want to authenticate?',
+      choices: ['Key', 'Password'],
+      default: 'Key',
+    })
+
+    let key = flags.key;
+    let sshPassword;
+    if (authMethod === 'Key' && !key) {
+      key = await input({
+        message: 'What is the path to the SSH private key?',
+        default: `~/.ssh/id_rsa`
+      })
+      if (key.trim() === '') {
+        this.error('SSH private key path is required')
+      }
+    } else {
+      sshPassword = await password({
+        message: 'Enter the SSH password for the user',
+        mask: '*',
+      })
     }
 
     const spinner = yoctoSpinner()
     spinner.start('Connecting to validator via SSH...')
     try {
-      await exec(`ansible --ssh-common-args='-o StrictHostKeyChecking=no' -i ${ip}, -u ${sshUser} --private-key=${key} -m ping all`)
+      if (authMethod === 'Key') {
+        await exec(`ansible --ssh-common-args='-o StrictHostKeyChecking=no' -i ${ip}, -u ${sshUser} --private-key=${key} -m ping all`)
+      } else {
+        let ansibleCmd = getAnsibleCmdPath();
+        await exec(`ansible --ssh-common-args='-o StrictHostKeyChecking=no' -i ${ip}, -u ${sshUser} -e "ansible_password=${sshPassword}" -m ping all`)
+      }
       spinner.stop('SSH connection established successfully')
 
       let network = flags.network
@@ -168,7 +186,13 @@ export default class ValidatorCreate extends Command {
       let inventoryPath = `${SDO_HOME}/${network}-inventory.yml`
       writeInventoryFile(inventoryPath, inventory!, network)
 
-      runSdoUserPlaybook(sshUser, key, ip, validatorIdentityKey!, network)
+      let authInfo;
+      if (authMethod === 'Key') {
+        authInfo = key!
+      } else {
+        authInfo = sshPassword!
+      }
+      runSdoUserPlaybook(sshUser, authMethod, authInfo, ip, validatorIdentityKey!, network)
 
 
     } catch (error) {

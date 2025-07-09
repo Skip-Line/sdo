@@ -24,6 +24,7 @@
         | selectattr('name', 'search', '^nvme')
         | selectattr('type', 'equalto', 'disk')
         | selectattr('mountpoint', 'equalto', none)
+        | rejectattr('children', 'defined')
         | selectattr('size', '>', 800 * 1024 * 1024 * 1024)
         | sort(attribute='size', reverse=true)
         | list

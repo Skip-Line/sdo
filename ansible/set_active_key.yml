@@ -5,37 +5,47 @@
   gather_facts: false
 
   tasks:
-    block:
-      - name: Get the validator's identity key
-        become: false
-        delegate_to: localhost
-        slurp:
-          path: "/home/{{ sdo_user }}/keys/{{ hostvars[inventory_name].validator_identity_key }}.json"
-        register: identity_key
+    - name: Gear up for setting active key on Agave/Jito     
+      block:
+        - name: Get the validator's identity key
+          become: false
+          delegate_to: localhost
+          slurp:
+            path: "/home/{{ sdo_user }}/keys/{{ hostvars[inventory_name].validator_identity_key }}.json"
+          register: identity_key
 
-      - name: Set the validator's identity key
-        shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger set-identity"
-        args:
-          stdin: "{{ identity_key.content | b64decode }}"
+        - name: Set the validator's identity key
+          shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger set-identity"
+          args:
+            stdin: "{{ identity_key.content | b64decode }}"
 
-      - name: Add authorized voter account
-        shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger authorized-voter add"
-        args:
-          stdin: "{{ identity_key.content | b64decode }}" 
-    when: validator_type in ['Agave', 'Jito']
+        - name: Add authorized voter account
+          shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger authorized-voter add"
+          args:
+            stdin: "{{ identity_key.content | b64decode }}" 
+      when: validator_type in ['Agave', 'Jito']
 
-    block:
-      - name: Copy key to validator home
-        copy:
-          src: "/home/{{ sdo_user }}/keys/{{ hostvars[inventory_name].validator_identity_key }}.json"
-          dest: "/home/{{ sdo_user }}/active-identity.json"
-          owner: "{{ sdo_user }}"
-          group: "{{ sdo_user }}"
-          mode: '0600'
-      
-      - name: Set active key for firedancer
-        shell: /home/{{ sdo_user }}/firedancer/build/native/gcc/bin/fdctl set-identity --config /home/{{ sdo_user }}/fd-config.toml /home/{{ sdo_user }}/active-identity.json
+    - name: Gear up for setting active key on Firedancer
+      block:
+        - name: Copy key to validator home
+          copy:
+            src: "/home/{{ sdo_user }}/keys/{{ hostvars[inventory_name].validator_identity_key }}.json"
+            dest: "/home/{{ sdo_user }}/staked-identity.json"
+            owner: "{{ sdo_user }}"
+            group: "{{ sdo_user }}"
+            mode: '0600'
 
-      - name: Add authorized voter account
-        shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger authorized-voter add /home/{{ sdo_user }}/active-identity.json"
-    when: validator_type == 'Firedancer'
+        - name: Make sure identity.json links to staked identity
+          ansible.builtin.file:
+            src: "/home/{{ sdo_user }}/staked-identity.json"
+            dest: "/home/{{ sdo_user }}/identity.json"
+            state: link
+            owner: "{{ sdo_user }}"
+            group: "{{ sdo_user }}"
+        
+        - name: Set active key for firedancer
+          shell: /home/{{ sdo_user }}/firedancer/build/native/gcc/bin/fdctl set-identity --config /home/{{ sdo_user }}/fd-config.toml /home/{{ sdo_user }}/identity.json
+
+        - name: Add authorized voter account
+          shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger authorized-voter add /home/{{ sdo_user }}/identity.json"
+      when: validator_type == 'Firedancer'

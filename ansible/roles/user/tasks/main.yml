@@ -21,6 +21,27 @@
     user: sdo
     state: present
     key: "{{ lookup('file', ansible_ssh_private_key_file ~ '.pub') }}"
+  when: ansible_ssh_private_key_file is defined
 
+- name: Create or add existing ssh key
+  block:
+    - name: Find existing SSH key
+      become: false
+      delegate_to: localhost
+      stat:
+        path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa.pub"
+      register: ssh_key
 
+    - name: Create SSH key if not found
+      become: false
+      delegate_to: localhost
+      openssh_keypair:
+        path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+      when: ssh_key.stat.exists == false
 
+    - name: Add SSH public key to authorized_keys
+      authorized_key:
+        user: "{{ sdo_user }}"
+        state: present
+        key: "{{ lookup('file', lookup('env', 'HOME') ~ '/.ssh/id_rsa.pub') }}"
+  when: ansible_ssh_private_key_file is not defined

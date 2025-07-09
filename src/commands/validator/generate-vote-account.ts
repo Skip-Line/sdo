@@ -41,7 +41,8 @@ export default class ValidatorGenerateVoteAccount extends Command {
 
     let hostDetails = getInventoryItem(pubkey, network);
     if (hostDetails) {
-      createVoteAccount(hostDetails.validator_identity_key, hostDetails.validator_vote_key, hostDetails.withdraw_authority_key, hostDetails.commission, network)
+      console.log(hostDetails)
+      // createVoteAccount(hostDetails.validator_identity_key, hostDetails.validator_vote_key, hostDetails.withdraw_authority_key, hostDetails.commission, network)
     }
 
   }

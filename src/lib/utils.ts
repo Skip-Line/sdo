@@ -2,7 +2,7 @@ import fs from 'fs';
 import { execSync, spawn } from 'child_process';
 import { stringify, parse } from 'yaml';
 import { rootPathToAnsible, SDO_HOME } from './constants.js';
-import { dirname } from 'path';
+import path, { dirname } from 'path';
 
 export function moveFile(source: string, destination: string) {
     fs.mkdirSync(dirname(destination), { recursive: true });
@@ -47,7 +47,7 @@ export function runAnsiblePlaybook(playbookName: string, network: string, limit:
         if (code !== 0) {
             console.error(`Failed with code ${code}`);
         } else {
-            if (playbookName === "provision.yml") {
+            if (playbookName === "provision_node.yml") {
                 console.log('✅ Node provisioned successfully');
                 console.info('Kindly run if you haven\'t created a vote account');
                 console.info(`sdo validator create-vote-account -n ${network} -p ${limit}`)
@@ -62,11 +62,16 @@ export function runAnsiblePlaybook(playbookName: string, network: string, limit:
     });
 }
 
-export function runSdoUserPlaybook(user: string, keyPath: string, ip: string, pubkey: string, network: string, limit: string = 'all') {
+export function runSdoUserPlaybook(user: string, authMethod: string, authInfo: string, ip: string, pubkey: string, network: string, limit: string = 'all') {
     let ansiblePath = rootPathToAnsible();
     let playbookPath = `${ansiblePath}/setup_user_and_ssh.yml`;
 
-    const spawned = spawn('ansible-playbook', ['-i', ip + ',', playbookPath, '--limit', limit, '--user', user, '--private-key', keyPath]);
+    let spawned;
+    if (authMethod === 'Key') {
+        spawned = spawn('ansible-playbook', ['-i', ip + ',', playbookPath, '--limit', limit, '--user', user, '--private-key', authInfo]);
+    } else {
+        spawned = spawn('ansible-playbook', ['-i', ip + ',', playbookPath, '--limit', limit, '--user', user, '-e', `ansible_password=${authInfo}`]);
+    }
     spawned.stdout.on('data', (data) => {
         console.log(`${data}`);
     });
@@ -116,33 +121,33 @@ export function writeInventoryFile(inventoryPath: string, content: Record<string
 export function createVoteAccount(identity: string, vote: string, authority: string, commission: string, network: string) {
     const home = SDO_HOME;
 
-    if (fileExists(`${home}/${identity}.json`) && fileExists(`${home}/${vote}.json `)) {
+    // if (fileExists(`${home}/keys/${identity}.json`) && fileExists(`${home}/keys/${vote}.json `)) {
 
-        const rpcUrl = network === 'mainnet' ? 'https://api.mainnet-beta.solana.com' : 'https://api.testnet.solana.com';
-        const balance = checkBalance(rpcUrl);
+    const rpcUrl = network === 'mainnet' ? 'https://api.mainnet-beta.solana.com' : 'https://api.testnet.solana.com';
+    const balance = checkBalance(rpcUrl);
 
-        if (balance) {
-            try {
-                execSync(`solana create-vote-account ${home}/${vote}.json ${home}/${identity}.json ${authority} --commission ${commission} --url ${rpcUrl}`);
-                console.log('✅ Vote account created successfully');
-                console.info('Kindly run if you haven\'t provisioned the validator');
-                console.info(`sdo validator provision -n ${network} -p ${identity}`)
-                console.info(`If node is already provisioned, in case of a fresh node kindly run:`)
-                console.info(`sdo validator set-active-identity -n ${network} -p ${identity}`)
-            } catch (error) {
-                if (error instanceof Error) {
-                    console.error(`Error creating vote account: ${error.message}`);
-                } else {
-                    console.error(`Error creating vote account: ${String(error)}`);
-                }
+    if (balance) {
+        try {
+            execSync(`solana create-vote-account ${home}/keys/${vote}.json ${home}/keys/${identity}.json ${authority} --commission ${commission} --url ${rpcUrl}`);
+            console.log('✅ Vote account created successfully');
+            console.info('Kindly run if you haven\'t provisioned the validator');
+            console.info(`sdo validator provision -n ${network} -p ${identity}`)
+            console.info(`If node is already provisioned, in case of a fresh node kindly run:`)
+            console.info(`sdo validator set-active-identity -n ${network} -p ${identity}`)
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error(`Error creating vote account: ${error.message}`);
+            } else {
+                console.error(`Error creating vote account: ${String(error)}`);
             }
         }
     }
+    // }
 }
 
 export function fileExists(filePath: string): boolean {
     try {
-        fs.statSync(filePath);
+        fs.accessSync(filePath, fs.constants.F_OK);
         return true;
     } catch (error) {
         console.error(`File does not exist: ${filePath}`);
@@ -174,4 +179,8 @@ export function getInventoryItem(key: string, network: string) {
 
     const inventory = parse(fs.readFileSync(inventoryPath, 'utf8'));
     return inventory[network]?.hosts[key] || null;
+}
+
+export function getAnsibleCmdPath(): string {
+    return execSync('which ansible').toString().trim();
 }

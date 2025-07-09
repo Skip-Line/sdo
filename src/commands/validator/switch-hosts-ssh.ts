@@ -64,7 +64,7 @@ export default class ValidatorSwitchHostsSsh extends Command {
     try {
       exec(`ansible -i ${SDO_HOME}/${network}-inventory.yml -m ping --limit ${active},${backup}`)
       spinner.stop('SSH connection check successful')
-      runAnsiblePlaybook("switch_ssh.yml", network!, `${active},${backup}`)
+      runAnsiblePlaybook("switch_hosts_ssh.yml", network!, `${active},${backup}`)
     } catch (error) {
       spinner.stop('Failed to connect via SSH')
       this.error(`SSH connection failed`)

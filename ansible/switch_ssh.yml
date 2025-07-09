@@ -1,8 +1,0 @@
----
-- name: Switching validators using SSH
-  hosts: all
-  become: true
-
-  tasks:
-    - debug:
-        msg: "{{ play_hosts}}"

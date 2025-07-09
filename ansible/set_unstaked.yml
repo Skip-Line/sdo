@@ -12,7 +12,8 @@
         group: "{{ sdo_user }}"
 
     - name: Set validator key to unstaked
-      command: > 
+      command: |
+        sudo -iu {{ sdo_user }} bash -c "source ~/.profile && agave-validator -l /mnt/ledger wait-for-restart-window --min-idle-time 2 --skip-new-snapshot-check"
         sudo -iu {{ sdo_user }} bash -c "source ~/.profile && agave-validator -l /mnt/ledger set-identity ~/identity.json"
       when: validator_type in ['Agave', 'Jito']
 
