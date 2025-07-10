@@ -17,17 +17,29 @@ Linux or MacOSX. For Windows, kindly use [WSL2 for Windows](https://learn.micros
 
 ### INTRO
 <!-- toc -->
+* [Installation](#installion)
+* [Upgdating](#updating)
+* [Docs](#docs)
 * [Usage](#usage)
 * [Commands](#commands)
 <!-- tocstop -->
+# Installation
+```bash
+npm install -g @skipline/sdo
+```
+# Docs
+For detailed information about commands and guides, kindly visit the full docs at [https://skip-line.github.io/sdo/](https://skip-line.github.io/sdo/)
+# Updating
+```bash
+npm update -g @skipline/sdo
+```
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @skipline/sdo
 $ sdo COMMAND
 running command...
 $ sdo (--version)
-sdo/0.0.0 darwin-x64 node-v22.17.0
+sdo/0.1.0 darwin-x64 node-v22.17.0
 $ sdo --help [COMMAND]
 USAGE
   $ sdo COMMAND
