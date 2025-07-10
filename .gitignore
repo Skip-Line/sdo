@@ -6,7 +6,7 @@
 /tmp
 /node_modules
 oclif.manifest.json
-
+docs-src/_site
 
 TODO.txt
 yarn.lock

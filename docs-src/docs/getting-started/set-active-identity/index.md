@@ -14,7 +14,7 @@ Identity: 32nTAQSAxzSbvURguFvfz5FX1g4enbvgyttMYHr1KJqM
 Genesis Hash: 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY
 ⠐ 125:43:28 | Processed Slot: 344033427 | Confirmed Slot: 344033426 | Finalized Slot: 344033389 | Full Snapshot Slot: 344024662 | Incremental Sna
 ```
- There might be some varied input like downloading snapshot, catching up or, loading ledger. In that case, the startup has'nt completed. Wait for it to complete.
+ There might be some varied input like downloading snapshot, catching up or, loading ledger. In that case, the startup hasn't completed. Wait for it to complete.
 
  `sdo` sets up the validator with a random and unstaked identity to avoid problems like double voting and etc. So, in order to finally go online on Solana's network, you have to change it with the identity public key supplied at start. Run the following command on your local computer to do that
 
