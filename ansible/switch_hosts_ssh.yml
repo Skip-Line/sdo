@@ -33,10 +33,12 @@
         group: "{{ sdo_user }}"
       when: inventory_hostname == backup_host
 
-  import_playbook: set_unstaked.yml
+- import_playbook: set_unstaked.yml
   when: inventory_hostname == active_host
   
-  import_playbook: set_active_key.yml
+- import_playbook: set_active_key.yml
+  vars:
+    require_tower: true
   when: inventory_hostname == backup_host
 
       

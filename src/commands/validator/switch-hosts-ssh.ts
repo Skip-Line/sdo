@@ -1,6 +1,6 @@
 import { input, select } from '@inquirer/prompts'
 import { Args, Command, Flags } from '@oclif/core'
-import { exec } from 'child_process'
+import { exec, execSync } from 'child_process'
 import yoctoSpinner from 'yocto-spinner'
 import { SDO_HOME } from '../../lib/constants.js'
 import { runAnsiblePlaybook } from '../../lib/utils.js'
@@ -62,7 +62,8 @@ export default class ValidatorSwitchHostsSsh extends Command {
     const spinner = yoctoSpinner()
     spinner.start('Connecting to validator via SSH...')
     try {
-      exec(`ansible -i ${SDO_HOME}/${network}-inventory.yml -m ping --limit ${active},${backup}`)
+      execSync(`ansible -i ${SDO_HOME}/${network}-inventory.yml --limit ${active},${backup} -m ping all`)
+
       spinner.stop('SSH connection check successful')
       runAnsiblePlaybook("switch_hosts_ssh.yml", network!, `${active},${backup}`)
     } catch (error) {

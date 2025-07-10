@@ -41,10 +41,9 @@ export default class ValidatorSetActiveIdentity extends Command {
     }
 
     const home = `${SDO_HOME}`;
-    const inventoryFile = `${home}/${network}-inventory.yml`
 
     fileExists(`${home}/keys/${pubkey}.json`)
 
-    runAnsiblePlaybook("set_active_key.yml", inventoryFile, pubkey)
+    runAnsiblePlaybook("set_active_key.yml", network, pubkey)
   }
 }

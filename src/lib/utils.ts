@@ -55,7 +55,13 @@ export function runAnsiblePlaybook(playbookName: string, network: string, limit:
                 console.info(`sdo validator set-active-identity -n ${network} -p ${limit}`)
             } else if (playbookName === "set_unstaked.yml") {
                 console.log('✅ Validator is set to unstaked key');
-            } else {
+            } else if (playbookName === "set_active_key.yml") {
+                console.log('✅ Validator is set to active key');
+            } else if (playbookName === "switch_hosts_ssh.yml") {
+                console.log('✅ Validator hosts switched successfully');
+                switchHostsDetailsInventory(network, limit);
+            }
+            else {
                 console.log('✅ Task executed successfully');
             }
         }
@@ -184,3 +190,38 @@ export function getInventoryItem(key: string, network: string) {
 export function getAnsibleCmdPath(): string {
     return execSync('which ansible').toString().trim();
 }
+
+function switchHostsDetailsInventory(network: string, hosts: string) {
+    const inventoryPath = `${SDO_HOME}/${network}-inventory.yml`;
+    const [activeHost, backupHost] = hosts.split(',');
+
+
+    const inventory = parse(fs.readFileSync(inventoryPath, 'utf8'));
+
+    inventory[network].hosts = swapKeysInObject(inventory[network].hosts, activeHost, backupHost);
+
+
+
+    fs.writeFileSync(inventoryPath, stringify(inventory), 'utf8');
+    console.log(`✅ Switched hosts in inventory for network ${network}`);
+
+}
+
+function swapKeysInObject(obj: Record<string, any>, key1: string, key2: string): Record<string, any> {
+
+    let tempKey = obj.testnet[key1].validator_identity_key;
+    obj.testnet[key2].validator_identity_key = obj.testnet[key1].validator_identity_key;
+    obj.testnet[key1].validator_identity_key = tempKey;
+
+    let tempType = obj.testnet[key1].validator_type;
+    obj.testnet[key2].validator_type = obj.testnet[key1].validator_type;
+    obj.testnet[key1].validator_type = tempType;
+
+    // Step 2: Swap key1 and key2
+    let tempHost = obj.testnet[key1];
+    obj.testnet[key1] = obj.testnet[key2];
+    obj.testnet[key2] = tempHost;
+
+    return obj;
+}
+

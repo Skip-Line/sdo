@@ -3,8 +3,8 @@ TODO
 [x] Create vote account
 [x] Set main identity for validator using cmd
 [] Download snapshots through aria2
-[] Hot backup switch
+[x] Hot backup switch
 [] Restart validator service through cmd
 [] Update Validator software
-[] Allow initial ssh through password
+[x] Allow initial ssh through password
 [] SSH port

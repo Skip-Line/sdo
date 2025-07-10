@@ -11,13 +11,37 @@
           become: false
           delegate_to: localhost
           slurp:
-            path: "/home/{{ sdo_user }}/keys/{{ hostvars[inventory_name].validator_identity_key }}.json"
+            path: "{{ lookup('env', 'HOME') }}/.{{ sdo_user }}/keys/{{ inventory_hostname }}.json"
           register: identity_key
+          when: active_host is not defined
+
+        - name: Get the validator's identity key
+          become: false
+          delegate_to: localhost
+          slurp:
+            path: "{{ lookup('env', 'HOME') }}/.{{ sdo_user }}/keys/{{ active_host }}.json"
+          register: identity_key
+          when: active_host is defined
+
+        - name: Get the validator's identity key
+          become: false
+          delegate_to: localhost
+          slurp:
+            path: "{{ lookup('env', 'HOME') }}/.{{ sdo_user }}/keys/{{ inventory_hostname }}.json"
+          register: identity_key
+          when: active_host is defined
 
         - name: Set the validator's identity key
           shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger set-identity"
           args:
             stdin: "{{ identity_key.content | b64decode }}"
+          when: require_tower is not defined
+
+        - name: Set the validator's identity key
+          shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger set-identity --require-tower"
+          args:
+            stdin: "{{ identity_key.content | b64decode }}"
+          when: require_tower is defined
 
         - name: Add authorized voter account
           shell: sudo -iu {{ sdo_user }} bash -c "source /home/{{sdo_user}}/.profile && agave-validator -l /mnt/ledger authorized-voter add"
