@@ -207,6 +207,7 @@ export default class ValidatorCreate extends Command {
       }
 
     }
+  }
 
   private async genOrGetKeypair(type: string) {
     const spinner = yoctoSpinner()
