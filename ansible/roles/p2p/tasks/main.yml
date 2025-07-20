@@ -1,0 +1,67 @@
+---
+- set_fact:
+    local_certs_dir: "{{ lookup('env', 'HOME') }}/.{{ sdo_user }}/certs" 
+
+- name: Create p2p app directory
+  file:
+    path: "/home/{{ sdo_user }}/p2p"
+    state: directory
+    recurse: yes
+    owner: "{{ sdo_user }}"
+    group: "{{ sdo_user }}"
+
+- name: Copy p2p app
+  copy:
+    src: goapp/app
+    dest: "/home/{{ sdo_user }}/p2p/app"
+    mode: '0755'
+    owner: "{{ sdo_user }}"
+    group: "{{ sdo_user }}"
+
+- name: Copy certificates to p2p app directory
+  copy:
+    src: "{{ local_certs_dir }}/{{ item }}"
+    dest: "/home/{{ sdo_user }}/p2p/"
+    mode: '0755'
+    owner: "{{ sdo_user }}"
+    group: "{{ sdo_user }}"
+  loop:
+    - ca.pem
+    - ca.key
+    - "{{ ansible_host | replace('.', '_') }}.pem"
+    - "{{ ansible_host | replace('.', '_') }}.key"
+
+- name: Open p2p port
+  ansible.builtin.ufw:
+    rule: allow
+    port: "{{ p2p_port }}"
+    proto: "any"
+
+- name: Copy peers.json to p2p app directory
+  template:
+    src: peers.json.j2
+    dest: "/home/{{ sdo_user }}/p2p/peers.json"
+    mode: '0644'
+    owner: "{{ sdo_user }}"
+    group: "{{ sdo_user }}"
+
+
+
+
+- name: Start quic on primary
+  shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{sdo_user}}/p2p && nohup ./app primary > /tmp/listener.log 2>&1 &"
+  when: inventory_hostname == active
+
+
+- name: Gear up to run QUIC on backup
+  block:
+    - name: Copy staked identity key to backup
+      copy:
+        src: "{{ lookup('env', 'HOME') }}/.{{ sdo_user }}/keys/{{ hostvars[active].validator_identity_key }}.json"
+        dest: "/home/{{ sdo_user }}/staked-identity.json"
+        owner: "{{ sdo_user }}"
+        group: "{{ sdo_user }}"
+        mode: '0600'
+    - name: Start quic on backup
+      shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{sdo_user}}/p2p && ./app backup"
+  when: inventory_hostname == backup

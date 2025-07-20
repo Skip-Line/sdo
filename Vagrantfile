@@ -68,19 +68,23 @@ Vagrant.configure("2") do |config|
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
-  config.vm.define "box1" do |box1|
-    box1.vm.box = "cloud-image/ubuntu-24.04"
-    box1.vm.network "private_network", ip: "192.168.33.10"
-    box1.vm.provider "virtualbox" do |vb|
+  config.vm.define "machine1" do |machine1|
+    machine1.vm.box = "cloud-image/ubuntu-24.04"
+    machine1.vm.network "private_network", ip: "192.168.33.10"
+    machine1.vm.provider "virtualbox" do |vb|
+      vb.cpus = 1
       vb.memory = "2048"
     end
+    machine1.vm.synced_folder "./ansible/roles/p2p", "/app" 
   end
 
-  config.vm.define "box2" do |box2|
-    box2.vm.box = "cloud-image/ubuntu-24.04"
-    box2.vm.network "private_network", ip: "192.168.33.11"
-    box2.vm.provider "virtualbox" do |vb|
-      vb.memory = "2048" 
-    end 
+  config.vm.define "machine2" do |machine2|
+    machine2.vm.box = "cloud-image/ubuntu-24.04"
+    machine2.vm.network "private_network", ip: "192.168.33.11"
+    machine2.vm.provider "virtualbox" do |vb|
+      vb.cpus = 1
+      vb.memory = "2048"
+    end
+    machine2.vm.synced_folder "./ansible/roles/p2p", "/app"
   end
 end

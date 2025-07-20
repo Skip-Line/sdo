@@ -162,7 +162,7 @@ export default class ValidatorCreate extends Command {
         } else if (network === 'mainnet') {
 
           if (jitoRegion === "New York") {
-            jitoRegion = "nyc"
+            jitoRegion = "ny"
           } else if (jitoRegion === "Salt Lake City") {
             jitoRegion = "slc"
           }
@@ -175,7 +175,7 @@ export default class ValidatorCreate extends Command {
               validator_vote_key: validatorVoteKey,
               withdraw_authority_key: withdrawAuthorityKey,
               validator_type: validatorType,
-              jito_commission: jitoCommission,
+              jito_commission: parseInt(jitoCommission!) * 100,
               jito_region: jitoRegion,
               commission,
               ansible_user: "sdo",

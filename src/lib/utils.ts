@@ -27,6 +27,29 @@ export function moveFile(source: string, destination: string) {
     });
 }
 
+export function runAnsiblePlaybookAgainstLocal(playbookName: string, network: string, active: string, backup: string) {
+    let ansiblePath = rootPathToAnsible();
+    let playbookPath = `${ansiblePath}/${playbookName}`;
+
+    const ip1 = getInventoryItem(active, network)['ansible_host'];
+    const ip2 = getInventoryItem(backup, network)['ansible_host'];
+
+    const spawned = spawn('ansible-playbook', ['-i 127.0.0.1,', `-e ip1=${ip1} -e ip2=${ip2}`, '--connection=local', playbookPath]);
+    spawned.stdout.on('data', (data) => {
+        console.log(`${data}`);
+    });
+    spawned.stderr.on('data', (data) => {
+        console.error(`${data}`);
+    });
+    spawned.on('close', (code) => {
+        if (code !== 0) {
+            console.error(`Failed with code ${code}`);
+        } else {
+            runAnsiblePlaybook("switch_hosts_p2p.yml", network!, `${active},${backup}`)
+        }
+    });
+}
+
 export function runAnsiblePlaybook(playbookName: string, network: string, limit: string = 'all') {
 
     let ansiblePath = rootPathToAnsible();
@@ -36,7 +59,14 @@ export function runAnsiblePlaybook(playbookName: string, network: string, limit:
 
     console.log(`Running Ansible playbook: ${playbookPath} with inventory: ${inventoryPath} and limit: ${limit}`);
 
-    const spawned = spawn('ansible-playbook', ['-i', inventoryPath, playbookPath, '--limit', limit]);
+    let spawned;
+    if (playbookName === "switch_hosts_p2p.yml") {
+        let [active, backup] = limit.split(",");
+        spawned = spawn('ansible-playbook', ['-i', inventoryPath, `-e active=${active} -e backup=${backup}`, playbookPath, '--limit', limit]);
+    }
+    else {
+        spawned = spawn('ansible-playbook', ['-i', inventoryPath, playbookPath, '--limit', limit]);
+    }
     spawned.stdout.on('data', (data) => {
         console.log(`${data}`);
     });

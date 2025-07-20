@@ -1,2 +1,10 @@
 ---
 agave_install_script_url: "https://release.anza.xyz/v{{ agave_version }}/install"
+shred_reciever_addresses:
+  - {location: 'Amsterdam', address: '74.118.140.240:1002' }
+  - {location: 'Frankfurt', address: '64.130.50.14:1002' }
+  - {location: 'London', address: '142.91.127.175:1002' }
+  - {location: 'ny', address: '141.98.216.96:1002' }
+  - {location: 'slc', address: '64.130.53.8:1002' }
+  - {location: 'Singapore', address: '202.8.11.224:1002' }
+  - {location: 'Tokyo', address: '202.8.9.160:1002' }

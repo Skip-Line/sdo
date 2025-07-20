@@ -12,8 +12,9 @@
     dest: /etc/logrotate.d/solana
     content: |
       /home/{{ sdo_user }}/solana-validator.log {
-        rotate 7
+        rotate 3
         daily
+        compress
         missingok
         postrotate
           systemctl kill -s USR1 {{ sdo_user }}.service

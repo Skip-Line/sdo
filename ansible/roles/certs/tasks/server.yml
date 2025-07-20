@@ -1,0 +1,34 @@
+---
+- set_fact:
+    ip_us: "{{ item | replace('.', '_') }}"
+- name: Generate private key for server certificate
+  openssl_privatekey:
+    path: "{{ certs_dir }}/{{ ip_us }}.key"
+  
+- name: Create certificate signing request (CSR) for server certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ certs_dir }}/{{ ip_us }}.key"
+    use_common_name_for_san: false
+    subject_alt_name:
+      - "IP:{{ item }}"
+    basic_constraints:
+      - 'CA:FALSE'  
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    key_usage_critical: true
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+    extended_key_usage_critical: true
+
+  register: server_csr
+
+- name: Create server certificate
+  community.crypto.x509_certificate:
+    path: "{{ certs_dir }}/{{ ip_us }}.pem"
+    csr_content: "{{ server_csr.csr }}"
+    privatekey_path: "{{ certs_dir }}/{{ ip_us }}.key"
+    provider: ownca
+    ownca_path: "{{ certs_dir }}/ca.pem"
+    ownca_privatekey_path: "{{ certs_dir }}/ca.key"

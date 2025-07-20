@@ -1,0 +1,8 @@
+---
+- name: Switch hosts using P2P
+  hosts: all
+  become: true
+  gather_facts: false
+  
+  roles:
+    - p2p

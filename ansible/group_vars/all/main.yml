@@ -6,3 +6,4 @@ validator_port_end: 8020
 rpc_port: 8899
 fd_validator_port_start: 8900
 fd_validator_port_end: 9000
+p2p_port: 9001

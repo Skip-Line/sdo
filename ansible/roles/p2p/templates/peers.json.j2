@@ -1,0 +1,14 @@
+{
+    "primary": {
+        "address": "{{ hostvars[active]['ansible_host'] }}",
+        "identity": "{{hostvars[active]['validator_identity_key'] }}",
+        "port": "{{ p2p_port }}"     
+    },
+    "peers": [
+        {
+            "name": "backup",
+            "address": "{{ hostvars[backup]['ansible_host'] }}",
+            "home": "/home/{{ sdo_user }}"
+        }
+    ]
+}

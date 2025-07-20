@@ -35,6 +35,7 @@ exec agave-validator \
 --commission-bps {{ hostvars[inventory_hostname].jito_commission }} \
 --relayer-url http://{{ hostvars[inventory_hostname].jito_region }}.mainnet.relayer.jito.wtf:8100 \
 --block-engine-url https://{{ hostvars[inventory_hostname].jito_region }}.mainnet.block-engine.jito.wtf \
+--shred-receiver-address {{ shred_reciever_addresses | selectattr('location', 'equalto', hostvars[inventory_hostname].jito_region) | map(attribute='address') | first }} \
 {% endif %}
 --only-known-rpc \
 --dynamic-port-range {{ validator_port_start }}-{{ validator_port_end }} \

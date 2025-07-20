@@ -1,0 +1,26 @@
+---
+- name: Disable default update packages
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  with_items:
+    - unattended-upgrades
+    - apt-daily-upgrade.timer
+    - apt-daily-upgrade.service
+    - update-notifier-download.timer
+    - update-notifier-download.service
+    - apt-daily.timer
+    - apt-daily.service
+
+- name: Disable automatic restarts
+  ansible.builtin.lineinfile:
+    path: /etc/needrestart/needrestart.conf
+    regexp: "^$nrconf{restart} ="
+    line: '$nrconf{restart} = "l";'
+
+- name: Disable automatic updates for unattended upgrades
+  ansible.builtin.lineinfile:
+    path: /etc/apt/apt.conf.d/20auto-upgrades
+    regexp: "^APT::Periodic::Unattended-Upgrade"
+    line: 'APT::Periodic::Unattended-Upgrade "0";'

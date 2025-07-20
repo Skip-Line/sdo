@@ -1,0 +1,37 @@
+---
+- set_fact:
+    certs_dir: "{{ lookup('env', 'HOME') }}/.{{ sdo_user }}/certs"
+
+- name: Ensure certificates directory exists
+  file:
+    path: "{{ certs_dir }}"
+    state: directory
+
+- name: Generate certificate authority
+  openssl_privatekey:
+    path: "{{ certs_dir }}/ca.key"
+
+- name: Create certificate signing request (CSR) for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ certs_dir }}/ca.key"
+    common_name: SDO
+    use_common_name_for_san: false  # since we do not specify SANs, don't use CN as a SAN
+    basic_constraints:
+      - 'CA:TRUE'
+    basic_constraints_critical: true
+    key_usage:
+      - keyCertSign
+    key_usage_critical: true
+  register: ca_csr
+
+- name: Create CA certificate
+  community.crypto.x509_certificate:
+    path: "{{ certs_dir }}/ca.pem"
+    csr_content: "{{ ca_csr.csr }}"
+    privatekey_path: "{{ certs_dir }}/ca.key"
+    provider: selfsigned
+
+- include_tasks: server.yml
+  loop:
+    - "{{ ip1 }}"
+    - "{{ ip2 }}"

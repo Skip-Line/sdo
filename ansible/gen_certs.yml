@@ -1,0 +1,13 @@
+---
+- name: Generate root certificates
+  hosts: all
+  gather_facts: no
+
+  roles:
+    - certs
+
+
+
+
+  
+  
