@@ -1,7 +1,7 @@
 sdo
 =================
 
-A CLI tool which enables operators of Solana Validators to create new or manage existing validators.
+A CLI tool which enables operators of Solana Validators to create new or manage existing validators. It comes with a P2P switch over utility for active and backup nodes. The identity switch over process completes in milliseconds.
 
 ## PREREQUISTES
 
@@ -52,6 +52,7 @@ USAGE
 * [`sdo validator provision`](#sdo-validator-provision)
 * [`sdo validator set-active-identity`](#sdo-validator-set-active-identity)
 * [`sdo validator generate-vote-account`](#sdo-validator-generate-vote-account)
+* [`sdo validator switch-hosts-p2p`](#sdo-validator-switch-hosts-p2p)
 
 
 ## `sdo validator create`
@@ -206,6 +207,36 @@ DESCRIPTION
 EXAMPLES
   $ sdo validator set-active-identity -n testnet -p sdoEAGtkL2guBHMjqP8bbBh3PNRnUDGEkNDP7ynY8zH
 ```
+
+## `sdo validator switch-hosts-p2p`
+
+This command lets you switch over between validator nodes in milliseconds given both are caught up. If the nodes are provisioned with `sdo`, a plain command with necessary variables is enough. If the nodes are provisioned already, the operator needs to specify a `yml` file which contains the necessary variables.
+
+```
+USAGE
+  $ sdo validator switch-hosts-p2p
+
+FLAGS
+  -n, --network=<value>  (required) Which network the validator node operates on (mainnet|testnet)
+  -a, --active=<value>   (required) Public identity key of the active validator
+  -b, --backup=<value>   (required) Public identity key of the backup validator
+  -c, --config=<value>   (optional) Path to the yml file which holds the values for both nodes
+
+DESCRIPTION
+  An inventory file to be used by `sdo` needs to be created before running this command in any case. The operator needs to use `validator create` command and supply respective values. Once the nodes are configured to be used by `sdo`, this command can be run. It is simple if the nodes are also provisioned by `sdo` to prepare the validator server. 
+
+  If nodes have been not configured by`sdo`, the operator needs to specify the given values in `conf.yml.sample`. 
+
+  
+
+EXAMPLES
+  $ sdo validator switch-hosts-p2p -n testnet -a sdoEAGtkL2guBHMjqP8bbBh3PNRnUDGEkNDP7ynY8zH -b  sdoPJRoLhCYPE4Fi698P7EVcypz6SGobAbp4oGAjpuq
+
+  $sdo validator switch-hosts-p2p -n testnet -a sdoEAGtkL2guBHMjqP8bbBh3PNRnUDGEkNDP7ynY8zH -b  sdoPJRoLhCYPE4Fi698P7EVcypz6SGobAbp4oGAjpuq -c conf.yml
+
+
+```
+
 
 ## LICENSE
 The code is available under [MIT License](https://mit-license.org)
