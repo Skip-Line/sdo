@@ -221,14 +221,14 @@ FLAGS
   -a, --active=<value>   (required) Public identity key of the active validator
   -b, --backup=<value>   (required) Public identity key of the backup validator
   -c, --config=<value>   (optional) Path to the yml file which holds the values for both nodes
-
-DESCRIPTION
+```
+### DESCRIPTION
   An inventory file to be used by `sdo` needs to be created before running this command in any case. The operator needs to use `validator create` command and supply respective values. Once the nodes are configured to be used by `sdo`, this command can be run. It is simple if the nodes are also provisioned by `sdo` to prepare the validator server. 
 
   If nodes have been not configured by`sdo`, the operator needs to specify the given values in `conf.yml.sample`. 
 
   
-
+```
 EXAMPLES
   $ sdo validator switch-hosts-p2p -n testnet -a sdoEAGtkL2guBHMjqP8bbBh3PNRnUDGEkNDP7ynY8zH -b  sdoPJRoLhCYPE4Fi698P7EVcypz6SGobAbp4oGAjpuq
 
