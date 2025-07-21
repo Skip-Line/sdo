@@ -74,7 +74,7 @@
     "lint": "eslint",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
-    "prepack": "oclif manifest && env GOOS=linux GOARCH=amd64 go build ./ansible/roles/p2p/files/goapp app.go && cp -r ./ansible ./dist/",
+    "prepack": "oclif manifest && env GOOS=linux GOARCH=amd64 go build ./ansible/roles/p2p/files/goapp/app.go && cp -r ./ansible ./dist/",
     "test": "mocha --forbid-only \"test/**/*.test.ts\""
   },
   "types": "dist/index.d.ts"
