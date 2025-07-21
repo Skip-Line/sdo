@@ -49,7 +49,7 @@
 
 
 - name: Start quic on primary
-  shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{sdo_user}}/p2p && nohup ./app primary > /tmp/listener.log 2>&1 &"
+  shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{sdo_user}}/p2p && nohup ./app primary {{validator_type}} > /tmp/listener.log 2>&1 &"
   when: inventory_hostname == active
 
 
@@ -63,5 +63,5 @@
         group: "{{ sdo_user }}"
         mode: '0600'
     - name: Start quic on backup
-      shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{sdo_user}}/p2p && ./app backup"
+      shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{sdo_user}}/p2p && ./app backup {{validator_type}} {{backup_name}} > /tmp/listener.log 2>&1"
   when: inventory_hostname == backup

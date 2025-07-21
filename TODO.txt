@@ -4,8 +4,9 @@ TODO
 [x] Set main identity for validator using cmd
 [] Download snapshots through aria2
 [x] Hot backup switch through SSH
-[] Switch over p2p
+[x] Switch over p2p
 [] Restart validator service through cmd
 [] Update Validator software
 [x] Allow initial ssh through password
 [] SSH port
+[] Release procedure

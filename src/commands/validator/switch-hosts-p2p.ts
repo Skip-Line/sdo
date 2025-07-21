@@ -3,7 +3,9 @@ import { Args, Command, Flags } from '@oclif/core'
 import { exec, execSync } from 'child_process'
 import yoctoSpinner from 'yocto-spinner'
 import { SDO_HOME } from '../../lib/constants.js'
-import { runAnsiblePlaybook, runAnsiblePlaybookAgainstLocal } from '../../lib/utils.js'
+import { runAnsiblePlaybook, runAnsiblePlaybookAgainstLocal, switchHostsDetailsInventory } from '../../lib/utils.js'
+import { config } from 'chai'
+import { cwd } from 'process'
 
 export default class ValidatorSwitchHostsP2p extends Command {
   static override args = {
@@ -25,6 +27,10 @@ export default class ValidatorSwitchHostsP2p extends Command {
     backup: Flags.string({
       char: 'b',
       description: 'Pub key of hot backup validator',
+    }),
+    config: Flags.string({
+      char: 'c',
+      description: 'Path to the configuration file',
     }),
   }
 
@@ -59,14 +65,30 @@ export default class ValidatorSwitchHostsP2p extends Command {
       this.error('Hot backup validator pub key is required')
     }
 
+    let config = flags.config
+    if (!config) {
+      config = await input({
+        message: 'What is the path to the configuration file (Empty for none)?',
+      })
+    }
+    if (config.trim() === '') {
+      config = undefined
+    }
+    if (config && !config.endsWith('.yml')) {
+      this.error('Configuration file must be a YAML file')
+    }
+    if (config && !config.startsWith('/')) {
+      config = cwd() + '/' + config
+    }
+
     const spinner = yoctoSpinner()
-    spinner.start('Connecting to validator via SSH...')
+    spinner.start('Connecting to validators via SSH...')
     try {
       execSync(`ansible -i ${SDO_HOME}/${network}-inventory.yml --limit ${active},${backup} -m ping all`)
 
       spinner.stop('SSH connection check successful')
-      runAnsiblePlaybookAgainstLocal('gen_certs.yml', network!, active, backup)
-      // runAnsiblePlaybook("switch_hosts_p2p.yml", network!, `${active},${backup}`)
+      runAnsiblePlaybookAgainstLocal('gen_certs.yml', network!, active, backup, config)
+
     } catch (error) {
       spinner.stop('Failed to connect via SSH')
       this.error(`SSH connection failed`)

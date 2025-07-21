@@ -32,11 +32,13 @@
 
 - name: Handle formatting and mounting
   block:
-    - name: Format disks to ext4
+    - name: Format disks to specified filesystem types
       filesystem:
-        fstype: ext4
+        fstype: "{{ mount_points[idx].type }}"
         dev: "/dev/{{ item.name }}"
       loop: "{{ nvme_disks_over_800gb }}"
+      loop_control:
+        index_var: idx
     
     - name: Get disks UUID
       command: blkid -s UUID -o value /dev/{{ item.name }}
@@ -47,7 +49,7 @@
       mount:
         path: "{{ mount_points[idx].path }}"
         src: "/dev/disk/by-uuid/{{ disk_uuids.results[idx].stdout }}"
-        fstype: ext4
+        fstype: "{{ mount_points[idx].type }}"
         state: mounted
         opts: defaults,noatime
       loop: "{{ range(0, [disk_uuids.results | length, mount_points | length] | min) | list }}"

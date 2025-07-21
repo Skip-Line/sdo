@@ -2,13 +2,22 @@
     "primary": {
         "address": "{{ hostvars[active]['ansible_host'] }}",
         "identity": "{{hostvars[active]['validator_identity_key'] }}",
-        "port": "{{ p2p_port }}"     
+        "port": "{{ p2p_port }}",
+        "home": "/home/{{ sdo_user }}",
+        "ledger": "{{ active_ledger_path }}",
+        "firedancer_path": "{{ active_firedancer_path }}",
+        "vanity_key": "{{ active_vanity_key }}",
+        "firedancer_config": "{{ active_firedancer_config }}"
     },
     "peers": [
         {
-            "name": "backup",
+            "name": "{{ backup_name }}",
             "address": "{{ hostvars[backup]['ansible_host'] }}",
-            "home": "/home/{{ sdo_user }}"
+            "home": "/home/{{ sdo_user }}",
+            "ledger": "{{ backup_ledger_path }}",
+            "firedancer_path": "{{ backup_firedancer_path }}",
+            "identity_key": "{{ backup_identity_key }}",
+            "firedancer_config": "{{ backup_firedancer_config }}"
         }
     ]
 }

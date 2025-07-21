@@ -1,0 +1,10 @@
+---
+active_ledger_path: "/mnt/ledger"
+backup_ledger_path: "/mnt/ledger"
+active_firedancer_path: "/home/{{ sdo_user }}/firedancer/build/native/gcc/bin/fdctl"
+backup_firedancer_path: "/home/{{ sdo_user }}/firedancer/build/native/gcc/bin/fdctl"
+active_vanity_key: "/home/{{ sdo_user }}/unstaked-identity.json"
+active_firedancer_config: "/home/{{ sdo_user }}/fd-config.toml"
+backup_firedancer_config: "/home/{{ sdo_user }}/fd-config.toml"
+backup_identity_key: "/home/{{ sdo_user }}/staked-identity.json"
+backup_name: "backup"

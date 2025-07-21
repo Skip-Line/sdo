@@ -1,6 +1,6 @@
 ---
 mount_points:
-  - { name: ledger, path: /mnt/ledger }
-  - { name: accounts, path: /mnt/accounts }
-  - { name: snapshots, path: /mnt/snapshots }
-  - { name: common, path: /mnt }
+  - { name: ledger, path: /mnt/ledger, type: "xfs" }
+  - { name: accounts, path: /mnt/accounts, type: "ext4" }
+  - { name: snapshots, path: /mnt/snapshots, type: "ext4" }
+  - { name: common, path: /mnt, type: "ext4" }

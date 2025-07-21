@@ -27,7 +27,7 @@ export function moveFile(source: string, destination: string) {
     });
 }
 
-export function runAnsiblePlaybookAgainstLocal(playbookName: string, network: string, active: string, backup: string) {
+export function runAnsiblePlaybookAgainstLocal(playbookName: string, network: string, active: string, backup: string, config?: string) {
     let ansiblePath = rootPathToAnsible();
     let playbookPath = `${ansiblePath}/${playbookName}`;
 
@@ -45,12 +45,12 @@ export function runAnsiblePlaybookAgainstLocal(playbookName: string, network: st
         if (code !== 0) {
             console.error(`Failed with code ${code}`);
         } else {
-            runAnsiblePlaybook("switch_hosts_p2p.yml", network!, `${active},${backup}`)
+            runAnsiblePlaybook("switch_hosts_p2p.yml", network!, `${active},${backup}`, config);
         }
     });
 }
 
-export function runAnsiblePlaybook(playbookName: string, network: string, limit: string = 'all') {
+export function runAnsiblePlaybook(playbookName: string, network: string, limit: string = 'all', config?: string) {
 
     let ansiblePath = rootPathToAnsible();
     let playbookPath = `${ansiblePath}/${playbookName}`;
@@ -62,7 +62,9 @@ export function runAnsiblePlaybook(playbookName: string, network: string, limit:
     let spawned;
     if (playbookName === "switch_hosts_p2p.yml") {
         let [active, backup] = limit.split(",");
-        spawned = spawn('ansible-playbook', ['-i', inventoryPath, `-e active=${active} -e backup=${backup}`, playbookPath, '--limit', limit]);
+        let extraArgs = config ? `@${config}` : '';
+        console.log(extraArgs)
+        spawned = spawn('ansible-playbook', ['-i', inventoryPath, '-e', extraArgs, `-e active=${active} -e backup=${backup}`, playbookPath, '--limit', limit]);
     }
     else {
         spawned = spawn('ansible-playbook', ['-i', inventoryPath, playbookPath, '--limit', limit]);
@@ -87,7 +89,7 @@ export function runAnsiblePlaybook(playbookName: string, network: string, limit:
                 console.log('✅ Validator is set to unstaked key');
             } else if (playbookName === "set_active_key.yml") {
                 console.log('✅ Validator is set to active key');
-            } else if (playbookName === "switch_hosts_ssh.yml") {
+            } else if (playbookName === "switch_hosts_p2p.yml") {
                 console.log('✅ Validator hosts switched successfully');
                 switchHostsDetailsInventory(network, limit);
             }
@@ -221,36 +223,34 @@ export function getAnsibleCmdPath(): string {
     return execSync('which ansible').toString().trim();
 }
 
-function switchHostsDetailsInventory(network: string, hosts: string) {
+export function switchHostsDetailsInventory(network: string, hosts: string) {
     const inventoryPath = `${SDO_HOME}/${network}-inventory.yml`;
     const [activeHost, backupHost] = hosts.split(',');
 
 
     const inventory = parse(fs.readFileSync(inventoryPath, 'utf8'));
 
-    inventory[network].hosts = swapKeysInObject(inventory[network].hosts, activeHost, backupHost);
-
-
+    inventory[network].hosts = swapKeysInObject(inventory[network].hosts, activeHost, backupHost, network);
 
     fs.writeFileSync(inventoryPath, stringify(inventory), 'utf8');
     console.log(`✅ Switched hosts in inventory for network ${network}`);
 
 }
 
-function swapKeysInObject(obj: Record<string, any>, key1: string, key2: string): Record<string, any> {
+function swapKeysInObject(obj: Record<string, any>, active: string, backup: string, network: string): Record<string, any> {
 
-    let tempKey = obj.testnet[key1].validator_identity_key;
-    obj.testnet[key2].validator_identity_key = obj.testnet[key1].validator_identity_key;
-    obj.testnet[key1].validator_identity_key = tempKey;
+    let tempKey = obj[active].validator_identity_key;
+    obj[backup].validator_identity_key = obj[active].validator_identity_key;
+    obj[active].validator_identity_key = tempKey;
 
-    let tempType = obj.testnet[key1].validator_type;
-    obj.testnet[key2].validator_type = obj.testnet[key1].validator_type;
-    obj.testnet[key1].validator_type = tempType;
+    let tempType = obj[active].validator_type;
+    obj[backup].validator_type = obj[active].validator_type;
+    obj[active].validator_type = tempType;
 
     // Step 2: Swap key1 and key2
-    let tempHost = obj.testnet[key1];
-    obj.testnet[key1] = obj.testnet[key2];
-    obj.testnet[key2] = tempHost;
+    let tempHost = obj[active];
+    obj[active] = obj[backup];
+    obj[backup] = tempHost;
 
     return obj;
 }

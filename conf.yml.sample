@@ -1,0 +1,13 @@
+---
+active_ledger_path: "/mnt/ledger" # Path to the ledger on the active node
+backup_ledger_path: "/mnt/ledger" # Path to the ledger on the backup node
+
+active_vanity_key: "/home/sdo/unstaked-identity.json" # Path to the vanity key on the active node
+backup_identity_key: "/home/sdo/staked-identity.json" # Path to the identity key on the backup node
+
+active_firedancer_path: "/home/sdo/firedancer/build/native/gcc/bin/fdctl" # Path to the Firedancer binary on the active node
+backup_firedancer_path: "/home/sdo/firedancer/build/native/gcc/bin/fdctl" # Path to the Firedancer binary on the backup node
+active_firedancer_config: "/home/sdo/fd-config.toml" # Path to the Firedancer config on the active node
+backup_firedancer_config: "/home/sdo/fd-config.toml" # Path to the Firedancer config on the backup node
+
+backup_name: "backup" # Name of the backup node

@@ -19,40 +19,68 @@ import (
 )
 
 type PrimaryPeer struct {
-	Name      string `json:"name"`
-	Address   string `json:"address"`
-	PublicKey string `json:"public_key"`
-	Identity  string `json:"identity"`
-	PortRange string `json:"port_range"`
-	Port      string `json:"port"`
+	Name             string `json:"name"`
+	Address          string `json:"address"`
+	PublicKey        string `json:"public_key"`
+	Identity         string `json:"identity"`
+	Port             string `json:"port"`
+	Home             string `json:"home"`
+	Ledger           string `json:"ledger"`
+	FiredancerPath   string `json:"firedancer_path"`
+	VanityKey        string `json:"vanity_key"`
+	FiredancerConfig string `json:"firedancer_config"`
 }
 
-type PeerConfig struct {
+type AllConfig struct {
 	Peers   []AllowedPeer `json:"peers"`
 	Primary PrimaryPeer   `json:"primary"`
+	Backup  AllowedPeer
 }
 
 type AllowedPeer struct {
-	Name    string `json:"name"`
-	Address string `json:"address"`
-	Home    string `json:"home"`
+	Name             string `json:"name"`
+	Address          string `json:"address"`
+	Home             string `json:"home"`
+	Ledger           string `json:"ledger"`
+	FiredancerPath   string `json:"firedancer_path"`
+	IdentityKey      string `json:"identity_key"`
+	FiredancerConfig string `json:"firedancer_config"`
 }
 
-var peerConfig PeerConfig
+var allConfig AllConfig
+var validator string = "Agave"
+var validatorExec string = "agave-validator"
 
 func main() {
 	// Parse command line flag for mode
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	mode := "primary"
+	peerName := "backup"
+
 	if len(os.Args) > 1 {
 		mode = os.Args[1]
+
+		if mode != "primary" {
+			peerName = os.Args[3]
+		}
 	}
 
 	// Load peer configuration
 	log.Printf("Loading peer configuration...")
-	err := loadPeerConfig("peers.json")
+	err := loadAllConfig("peers.json", peerName)
 	if err != nil {
 		log.Fatal("Failed to load peer configuration:", err)
+	}
+
+	if len(os.Args) > 1 {
+		if os.Args[2] == "Firedancer" {
+			validator = "Firedancer"
+			if mode == "primary" {
+				validatorExec = allConfig.Primary.FiredancerPath
+			} else {
+				validatorExec = allConfig.Backup.FiredancerPath
+			}
+		}
 	}
 
 	// Load existing certificates (required)
@@ -82,7 +110,7 @@ func runPrimaryServer(tlsConfig *tls.Config) {
 		Allow0RTT:             true,
 	}
 
-	primaryPeer := peerConfig.Primary
+	primaryPeer := allConfig.Primary
 
 	listener, err := quic.ListenAddr("0.0.0.0:"+primaryPeer.Port, tlsConfig, quicConfig)
 	if err != nil {
@@ -108,7 +136,7 @@ func runPrimaryServer(tlsConfig *tls.Config) {
 }
 
 func runBackupClient(tlsConfig *tls.Config) {
-	primaryPeer := peerConfig.Primary
+	primaryPeer := allConfig.Primary
 
 	log.Printf("Backup peer connecting to primary at %s", primaryPeer.Address)
 
@@ -171,21 +199,27 @@ func handleStreamFromBackup(stream *quic.Stream, conn *quic.Conn) {
 }
 
 func sendFileToBackup(conn *quic.Conn) {
-	filePath := fmt.Sprintf("%s/tower-1_9-%s.bin", "/mnt/ledger", peerConfig.Primary.Identity)
+	filePath := fmt.Sprintf("%s/tower-1_9-%s.bin", allConfig.Primary.Ledger, allConfig.Primary.Identity)
 
 	// Create test file if needed
 	if !fileExists(filePath) {
 		log.Fatalf("File %s does not exist. Please create it before running the primary peer.", filePath)
 	}
 
-	_, cmdErr := executeCommand("agave-validator -l /mnt/ledger wait-for-restart-window --min-idle-time 2 --skip-new-snapshot-check")
-
-	if cmdErr != 0 {
-		log.Printf("Failed to execute command for validator restart: %v", cmdErr)
-		return
+	if validator == "Agave" {
+		restartCommand := fmt.Sprintf("%s -l %s wait-for-restart-window --min-idle-time 2 --skip-new-snapshot-check", validatorExec, allConfig.Primary.Ledger)
+		_, cmdErr := executeCommand(restartCommand)
+		if cmdErr != 0 {
+			log.Fatalf("Failed to execute command for validator restart: %v", cmdErr)
+		}
 	}
 
-	_, cmdErr = executeCommand("agave-validator -l /mnt/ledger  set-identity /home/sdo/identity.json")
+	setCommand := fmt.Sprintf("%s -l %s set-identity %s", validatorExec, allConfig.Primary.Ledger, allConfig.Primary.VanityKey)
+	if validator == "Firedancer" {
+		setCommand = fmt.Sprintf("%s -l %s --config %s set-identity %s", validatorExec, allConfig.Primary.Ledger, allConfig.Primary.FiredancerConfig, allConfig.Primary.VanityKey)
+	}
+
+	_, cmdErr := executeCommand(setCommand)
 
 	if cmdErr != 0 {
 		log.Printf("Failed to execute command for setting identity: %v", cmdErr)
@@ -368,7 +402,7 @@ func handleFileReceive(stream *quic.Stream) {
 
 	log.Printf("Receiving file: %s (%d bytes)", filename, fileSize)
 
-	outputPath := filepath.Join("/mnt/ledger", filename)
+	outputPath := filepath.Join(allConfig.Backup.Ledger, filename)
 	file, err := os.Create(outputPath)
 	if err != nil {
 		log.Printf("Failed to create file: %v", err)
@@ -414,15 +448,18 @@ func handleFileReceive(stream *quic.Stream) {
 	log.Printf("File transfer completed successfully!")
 
 	// Execute command and exit
-	executeCommandAndExit("/home/sdo/staked-identity.json")
+	executeCommandAndExit(allConfig.Backup.IdentityKey)
 }
 
 func executeCommandAndExit(filePath string) {
 	log.Printf("Executing command after receiving file: %s", filePath)
 
 	// Define the command to execute
-	command := fmt.Sprintf("agave-validator -l /mnt/ledger --require-tower set-identity %s", filePath) // Count lines in the received file
+	command := fmt.Sprintf("%s -l %s --require-tower set-identity %s", validatorExec, allConfig.Backup.Ledger, allConfig.Backup.IdentityKey)
 
+	if validator == "Firedancer" {
+		command = fmt.Sprintf("%s -l %s --config %s set-identity %s", validatorExec, allConfig.Backup.Ledger, allConfig.Backup.FiredancerConfig, allConfig.Backup.IdentityKey)
+	}
 	log.Printf("Executing command: %s", command)
 
 	// Execute the command
@@ -437,7 +474,7 @@ func executeCommandAndExit(filePath string) {
 		log.Printf("❌ Command execution failed with exit code: %d", exitCode)
 	}
 
-	command = fmt.Sprintf("agave-validator -l /mnt/ledger authorized-voter add %s", filePath)
+	command = fmt.Sprintf("%s -l %s authorized-voter add %s", validatorExec, allConfig.Backup.Ledger, filePath)
 
 	_, cmdErr := executeCommand(command)
 	if cmdErr != 0 {
@@ -476,7 +513,7 @@ func executeCommand(command string) (string, int) {
 	return string(output), exitCode
 }
 
-func loadPeerConfig(configPath string) error {
+func loadAllConfig(configPath, peerName string) error {
 	file, err := os.Open(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to open config file: %v", err)
@@ -485,9 +522,17 @@ func loadPeerConfig(configPath string) error {
 
 	decoder := json.NewDecoder(file)
 
-	err = decoder.Decode(&peerConfig)
+	err = decoder.Decode(&allConfig)
 	if err != nil {
 		return fmt.Errorf("failed to decode config file: %v", err)
+	}
+
+	// Find the backup peer configuration
+	for _, peer := range allConfig.Peers {
+		if peer.Name == peerName {
+			allConfig.Backup = peer
+			break
+		}
 	}
 
 	return nil
@@ -497,11 +542,11 @@ func loadTLSConfig(mode string) (*tls.Config, error) {
 	var certFile, keyFile string
 
 	if mode == "primary" {
-		certFile = strings.ReplaceAll(peerConfig.Primary.Address, ".", "_") + ".pem"
-		keyFile = strings.ReplaceAll(peerConfig.Primary.Address, ".", "_") + ".key"
+		certFile = strings.ReplaceAll(allConfig.Primary.Address, ".", "_") + ".pem"
+		keyFile = strings.ReplaceAll(allConfig.Primary.Address, ".", "_") + ".key"
 	}
 	if mode != "primary" {
-		for _, allowedPeer := range peerConfig.Peers {
+		for _, allowedPeer := range allConfig.Peers {
 			if allowedPeer.Name == mode {
 				certFile = strings.ReplaceAll(allowedPeer.Address, ".", "_") + ".pem"
 				keyFile = strings.ReplaceAll(allowedPeer.Address, ".", "_") + ".key"
@@ -539,7 +584,7 @@ func loadTLSConfigFromFiles(certFile, keyFile string) (*tls.Config, error) {
 		RootCAs:      loadCertPool("./ca.pem"),
 		ClientCAs:    loadCertPool("./ca.pem"),
 		ClientAuth:   tls.RequireAndVerifyClientCert, // mutual TLS
-		NextProtos:   []string{"quic-demo"},
+		NextProtos:   []string{"sdo-quic"},
 	}, nil
 }
 

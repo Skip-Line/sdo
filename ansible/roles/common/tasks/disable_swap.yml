@@ -14,3 +14,6 @@
     state: absent
     regexp: ".*swap.*"
   when: active_swaps.stdout_lines | length > 0
+
+- name: Flush handlers
+  meta: flush_handlers

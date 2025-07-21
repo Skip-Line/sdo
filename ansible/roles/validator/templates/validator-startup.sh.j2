@@ -5,7 +5,6 @@ exec agave-validator \
 --log /home/{{ sdo_user }}/solana-validator.log \
 --ledger /mnt/ledger \
 --accounts /mnt/accounts \
---snapshots /mnt/snapshots \
 {% if validator_type == "Agave" %}
 --entrypoint entrypoint.testnet.solana.com:8001 \
 --entrypoint entrypoint2.testnet.solana.com:8001 \
@@ -40,7 +39,7 @@ exec agave-validator \
 --only-known-rpc \
 --dynamic-port-range {{ validator_port_start }}-{{ validator_port_end }} \
 --rpc-port {{ rpc_port }} \
---use-snapshot-archives-at-startup when-newest \
 --wal-recovery-mode skip_any_corrupted_record \
 --no-port-check \
---limit-ledger-size
+--limit-ledger-size \
+--private-rpc
