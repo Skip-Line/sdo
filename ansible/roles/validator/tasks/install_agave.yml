@@ -1,4 +1,14 @@
 ---
+- name: Get Agave required version
+  uri:
+    url: "https://api.solana.org/api/epoch/required_versions?cluster={{ group_names[0] }}"
+    return_content: true
+  register: minimum_required_version
+
+- set_fact:
+    agave_version: "{{ minimum_required_version.json.data[0].agave_min_version }}"
+    agave_install_script_url: "https://release.anza.xyz/v{{ agave_version }}/install"
+    
 - name: Get install script for Agave
   become: false
   get_url:

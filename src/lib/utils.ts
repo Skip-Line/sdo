@@ -239,13 +239,13 @@ export function switchHostsDetailsInventory(network: string, hosts: string) {
 
 function swapKeysInObject(obj: Record<string, any>, active: string, backup: string, network: string): Record<string, any> {
 
-    let tempKey = obj[active].validator_identity_key;
+    // let tempKey = obj[backup].validator_identity_key;
     obj[backup].validator_identity_key = obj[active].validator_identity_key;
-    obj[active].validator_identity_key = tempKey;
+    // obj[active].validator_identity_key = tempKey;
 
-    let tempType = obj[active].validator_type;
-    obj[backup].validator_type = obj[active].validator_type;
-    obj[active].validator_type = tempType;
+    // let tempType = obj[backup].validator_type;
+    // obj[backup].validator_type = obj[active].validator_type;
+    // obj[active].validator_type = tempType;
 
     // Step 2: Swap key1 and key2
     let tempHost = obj[active];

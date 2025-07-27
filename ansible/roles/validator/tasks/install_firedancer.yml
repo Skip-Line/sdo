@@ -1,10 +1,25 @@
 ---
+- name: Get latest Firedancer version
+  uri:
+    url: "https://api.github.com/repos/firedancer-io/firedancer/releases?per_page=10"
+    return_content: true
+  register: firedancer_version_response
+
+- set_fact:
+    firedancer_version: >-
+      {{
+        (firedancer_version_response.json
+          | selectattr('name', 'search', group_names[0], ignorecase=True)
+          | map(attribute='tag_name')
+          | list | first)
+      }}
+
 - name: Get github repo for Firedancer
   become: false
   git:
     repo: https://github.com/firedancer-io/firedancer.git
     dest: "/home/{{ sdo_user }}/firedancer"
-    version: "v{{ firedancer_version }}"
+    version: "{{ firedancer_version }}"
     force: true
 
 - name: Install dependencies to build Firedancer

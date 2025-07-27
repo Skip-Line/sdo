@@ -35,8 +35,11 @@ dynamic_port_range = "{{ fd_validator_port_start }}-{{ fd_validator_port_end }}"
 [snapshots]
     incremental_snapshots = true
     full_snapshot_interval_slots = 25000
-    incremental_snapshot_interval_slots = 100
+    incremental_snapshot_interval_slots = 5000
+{% if nvme_disks_over_800gb | length > 2 %}
     path = "/mnt/snapshots"
+{% endif %}
+    
 
 [gossip]
 {% if group_names[0] == 'mainnet' %}
@@ -107,5 +110,5 @@ dynamic_port_range = "{{ fd_validator_port_start }}-{{ fd_validator_port_end }}"
     tip_distribution_program_addr = "F2Zu7QZiTYUhPd7u9ukRVwxh7B71oA3NMJcHuCHc29P2"
     tip_payment_program_addr = "GJHtFqM9agxPmkeKjHny6qiRKrXZALvvFGiKf11QE7hy"
     tip_distribution_authority = "7heQNXEtxSv3wV8sNbuQsDN5xNGbbpLvHGiyXuJxEf7n"
-    commission_bps = 5
+    commission_bps = 10000
 {% endif %}

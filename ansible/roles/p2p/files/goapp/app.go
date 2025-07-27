@@ -206,20 +206,19 @@ func sendFileToBackup(conn *quic.Conn) {
 		log.Fatalf("File %s does not exist. Please create it before running the primary peer.", filePath)
 	}
 
-	if validator == "Agave" {
-		restartCommand := fmt.Sprintf("%s -l %s wait-for-restart-window --min-idle-time 2 --skip-new-snapshot-check", validatorExec, allConfig.Primary.Ledger)
-		_, cmdErr := executeCommand(restartCommand)
-		if cmdErr != 0 {
-			log.Fatalf("Failed to execute command for validator restart: %v", cmdErr)
-		}
+	// Restart the validator
+	restartCommand := fmt.Sprintf("agave-validator -l %s wait-for-restart-window --min-idle-time 2 --skip-new-snapshot-check", allConfig.Primary.Ledger)
+	_, cmdErr := executeCommand(restartCommand)
+	if cmdErr != 0 {
+		log.Fatalf("Failed to execute command for validator restart: %v", cmdErr)
 	}
 
 	setCommand := fmt.Sprintf("%s -l %s set-identity %s", validatorExec, allConfig.Primary.Ledger, allConfig.Primary.VanityKey)
 	if validator == "Firedancer" {
-		setCommand = fmt.Sprintf("%s -l %s --config %s set-identity %s", validatorExec, allConfig.Primary.Ledger, allConfig.Primary.FiredancerConfig, allConfig.Primary.VanityKey)
+		setCommand = fmt.Sprintf("%s set-identity --config %s  %s", validatorExec, allConfig.Primary.FiredancerConfig, allConfig.Primary.VanityKey)
 	}
 
-	_, cmdErr := executeCommand(setCommand)
+	_, cmdErr = executeCommand(setCommand)
 
 	if cmdErr != 0 {
 		log.Printf("Failed to execute command for setting identity: %v", cmdErr)
@@ -458,7 +457,7 @@ func executeCommandAndExit(filePath string) {
 	command := fmt.Sprintf("%s -l %s --require-tower set-identity %s", validatorExec, allConfig.Backup.Ledger, allConfig.Backup.IdentityKey)
 
 	if validator == "Firedancer" {
-		command = fmt.Sprintf("%s -l %s --config %s set-identity %s", validatorExec, allConfig.Backup.Ledger, allConfig.Backup.FiredancerConfig, allConfig.Backup.IdentityKey)
+		command = fmt.Sprintf("%s set-identity --config %s %s", validatorExec, allConfig.Backup.FiredancerConfig, allConfig.Backup.IdentityKey)
 	}
 	log.Printf("Executing command: %s", command)
 
@@ -474,7 +473,7 @@ func executeCommandAndExit(filePath string) {
 		log.Printf("❌ Command execution failed with exit code: %d", exitCode)
 	}
 
-	command = fmt.Sprintf("%s -l %s authorized-voter add %s", validatorExec, allConfig.Backup.Ledger, filePath)
+	command = fmt.Sprintf("agave-validator -l %s authorized-voter add %s", allConfig.Backup.Ledger, filePath)
 
 	_, cmdErr := executeCommand(command)
 	if cmdErr != 0 {

@@ -5,7 +5,10 @@ exec agave-validator \
 --log /home/{{ sdo_user }}/solana-validator.log \
 --ledger /mnt/ledger \
 --accounts /mnt/accounts \
-{% if validator_type == "Agave" %}
+{% if nvme_disks_over_800gb | length > 2 %}
+--snapshots /mnt/snapshots \
+{% endif %}
+{% if group_names[0] == "testnet" %}
 --entrypoint entrypoint.testnet.solana.com:8001 \
 --entrypoint entrypoint2.testnet.solana.com:8001 \
 --entrypoint entrypoint3.testnet.solana.com:8001 \
@@ -16,6 +19,15 @@ exec agave-validator \
 --expected-genesis-hash 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY \
 --expected-shred-version 9065 \
 --expected-bank-hash 4oMrSXsLTiCc1X7S27kxSfGVraTCZoZ7YTy2skEB9bPk \
+{% if validator_type == 'Jito' %}
+--relayer-url https://ny.testnet.block-engine.jito.wtf:8100 \
+--block-engine-url https://ny.testnet.block-engine.jito.wtf \
+--shred-receiver-address 64.130.35.224:1002 \
+--tip-payment-program-pubkey GJHtFqM9agxPmkeKjHny6qiRKrXZALvvFGiKf11QE7hy \
+--tip-distribution-program-pubkey F2Zu7QZiTYUhPd7u9ukRVwxh7B71oA3NMJcHuCHc29P2 \
+--merkle-root-upload-authority  7heQNXEtxSv3wV8sNbuQsDN5xNGbbpLvHGiyXuJxEf7n \
+--commission-bps 10000 \
+{% endif %}
 {% else %}
 --entrypoint entrypoint.mainnet-beta.solana.com:8001 \
 --entrypoint entrypoint2.mainnet-beta.solana.com:8001 \
@@ -28,6 +40,7 @@ exec agave-validator \
 --known-validator CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S \
 --expected-genesis-hash 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d \
 --expected-shred-version 50093 \
+{% if validator_type == 'Jito' %}
 --tip-payment-program-pubkey T1pyyaTNZsKv2WcRAB8oVnk93mLJw2XzjtVYqCsaHqt \
 --tip-distribution-program-pubkey 4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7 \
 --merkle-root-upload-authority GZctHpWXmsZC1YHACTGGcHhYxjdRqQvTpYkb9LMvxDib \
@@ -35,6 +48,7 @@ exec agave-validator \
 --relayer-url http://{{ hostvars[inventory_hostname].jito_region }}.mainnet.relayer.jito.wtf:8100 \
 --block-engine-url https://{{ hostvars[inventory_hostname].jito_region }}.mainnet.block-engine.jito.wtf \
 --shred-receiver-address {{ shred_reciever_addresses | selectattr('location', 'equalto', hostvars[inventory_hostname].jito_region) | map(attribute='address') | first }} \
+{% endif %}
 {% endif %}
 --only-known-rpc \
 --dynamic-port-range {{ validator_port_start }}-{{ validator_port_end }} \

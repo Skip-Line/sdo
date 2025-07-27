@@ -16,19 +16,26 @@
               
       }}
 
-- name: Download Jito install script
+- name: Get github repo for Jito
   become: false
-  get_url:
-    url: "https://release.jito.wtf/{{ jito_version }}/install"
-    dest: /tmp/jito_install.sh
-    mode: '0755'
+  git:
+    repo: https://github.com/jito-foundation/jito-solana.git
+    dest: "/home/{{ sdo_user }}/jito"
+    version: "{{ jito_version }}"
+    force: true
 
-- name: Install Jito
+- name: Build Jito (Will take a while. Be patient)
+  shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{ sdo_user }}/jito/scripts && ./cargo-install-all.sh ."
+  args:
+    creates: "/home/{{ sdo_user }}/jito/scripts/bin/agave-validator"
+  
+
+- name: Add Jito to PATH
   become: false
-  shell: /tmp/jito_install.sh
-
-- name: Update Jito if we installed outdated
-  shell: sudo -iu {{ sdo_user }} bash -c "agave-install update"
+  lineinfile:
+    path: /home/{{ sdo_user }}/.bashrc
+    line: 'export PATH=/home/{{ sdo_user }}/jito/scripts/bin:$PATH'
+    state: present
 
 - name: Copy validator startup script
   template:

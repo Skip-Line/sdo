@@ -1,6 +1,4 @@
 ---
-- import_tasks: get_agave_and_firedancer_versions.yml
-
 - import_tasks: install_agave.yml
   when: validator_type == 'Agave'
 - import_tasks: install_firedancer.yml

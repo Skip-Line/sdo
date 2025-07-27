@@ -1,7 +1,6 @@
 ---
 - name: Create vanity address for unstaked identity
-  become: false
-  shell: sudo -iu {{ sdo_user }} bash -c "solana-keygen new --no-bip39-passphrase --outfile /home/{{ sdo_user}}/unstaked-identity.json"
+  shell: sudo -iu {{ sdo_user }} bash -ilc "solana-keygen new --no-bip39-passphrase --outfile /home/{{ sdo_user}}/unstaked-identity.json"
   args:
     creates: "/home/{{ sdo_user }}/unstaked-identity.json"
 
