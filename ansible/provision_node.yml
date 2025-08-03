@@ -2,7 +2,7 @@
 - name: Provision The Validator Node
   hosts: all
   become: true
-  gather_facts: false
+  gather_facts: true
 
   roles:
     - { role: common, tags: ['common']}

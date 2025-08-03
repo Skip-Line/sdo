@@ -24,3 +24,9 @@
     path: /etc/apt/apt.conf.d/20auto-upgrades
     regexp: "^APT::Periodic::Unattended-Upgrade"
     line: 'APT::Periodic::Unattended-Upgrade "0";'
+
+- name: Disable ufw
+  ansible.builtin.systemd_service:
+    name: ufw
+    enabled: false
+    state: stopped

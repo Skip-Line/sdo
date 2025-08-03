@@ -19,7 +19,7 @@ exec agave-validator \
 --expected-genesis-hash 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY \
 --expected-shred-version 9065 \
 --expected-bank-hash 4oMrSXsLTiCc1X7S27kxSfGVraTCZoZ7YTy2skEB9bPk \
-{% if validator_type == 'Jito' %}
+{% if validator_type == 'Jito' or validator_type == 'Paladin' %}
 --relayer-url https://ny.testnet.block-engine.jito.wtf:8100 \
 --block-engine-url https://ny.testnet.block-engine.jito.wtf \
 --shred-receiver-address 64.130.35.224:1002 \
@@ -40,7 +40,7 @@ exec agave-validator \
 --known-validator CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S \
 --expected-genesis-hash 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d \
 --expected-shred-version 50093 \
-{% if validator_type == 'Jito' %}
+{% if validator_type == 'Jito' or validator_type == 'Paladin' %}
 --tip-payment-program-pubkey T1pyyaTNZsKv2WcRAB8oVnk93mLJw2XzjtVYqCsaHqt \
 --tip-distribution-program-pubkey 4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7 \
 --merkle-root-upload-authority GZctHpWXmsZC1YHACTGGcHhYxjdRqQvTpYkb9LMvxDib \
@@ -53,7 +53,8 @@ exec agave-validator \
 --only-known-rpc \
 --dynamic-port-range {{ validator_port_start }}-{{ validator_port_end }} \
 --rpc-port {{ rpc_port }} \
---wal-recovery-mode skip_any_corrupted_record \
 --no-port-check \
 --limit-ledger-size \
---private-rpc
+--private-rpc \
+--snapshot-interval-slots 0 \
+--minimal-snapshot-download-speed 20485760

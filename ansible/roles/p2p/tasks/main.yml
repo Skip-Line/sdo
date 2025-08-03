@@ -31,11 +31,11 @@
     - "{{ ansible_host | replace('.', '_') }}.pem"
     - "{{ ansible_host | replace('.', '_') }}.key"
 
-- name: Open p2p port
-  ansible.builtin.ufw:
-    rule: allow
-    port: "{{ p2p_port }}"
-    proto: "any"
+# - name: Open p2p port
+#   ansible.builtin.ufw:
+#     rule: allow
+#     port: "{{ p2p_port }}"
+#     proto: "any"
 
 - name: Copy peers.json to p2p app directory
   template:

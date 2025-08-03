@@ -1,0 +1,47 @@
+---
+- name: Get latest Paladin version
+  uri:
+    url: "https://api.github.com/repos/paladin-bladesmith/paladin-solana/releases?per_page=10"
+    return_content: true
+  register: paladin_version_response
+
+- set_fact:
+    paladin_version: >-
+      {{ 
+
+        (paladin_version_response.json 
+          | selectattr('name', 'search', group_names[0], ignorecase=True)
+          | map(attribute='tag_name')
+          | list | first)
+              
+      }}
+
+- name: Get github repo for Paladin
+  become: false
+  git:
+    repo: https://github.com/paladin-bladesmith/paladin-solana.git
+    dest: "/home/{{ sdo_user }}/paladin"
+    version: "{{ paladin_version }}"
+    force: true
+
+- name: Build Paladin (Will take a while. Be patient)
+  shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{ sdo_user }}/paladin && ./cargo build --release"
+  args:
+    creates: "/home/{{ sdo_user }}/paladin/target/release/agave-validator"
+
+
+- name: Add Paladin to PATH
+  become: false
+  lineinfile:
+    path: /home/{{ sdo_user }}/.bashrc
+    line: 'export PATH=/home/{{ sdo_user }}/paladin/target/release:$PATH'
+    state: present
+
+- name: Copy validator startup script
+  template:
+    src: validator-startup.sh.j2
+    dest: /home/{{ sdo_user }}/validator-startup.sh
+    mode: '0755'
+    owner: "{{ sdo_user }}"
+    group: "{{ sdo_user }}"
+  when: validator_type == 'Paladin'

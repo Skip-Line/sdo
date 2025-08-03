@@ -9,7 +9,11 @@ LogRateLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-Environment=PATH=/home/{{ sdo_user }}/.local/share/solana/install/active_release/bin:/home/{{ sdo_user }}/jito/scripts/bin
+{% if validator_type == 'Paladin' %}
+Environment=PATH=/home/{{ sdo_user }}/paladin/target/release
+{% else %}
+Environment=PATH=/home/{{ sdo_user }}/.local/share/solana/install/active_release/bin:/home/{{ sdo_user }}/jito/scripts/bin:/home/{{ sdo_user }}/solana/bin
+{% endif %}
 WorkingDirectory=/home/{{ sdo_user }}
 {% if group_names[0] == 'testnet' %}
 Environment=SOLANA_METRICS_CONFIG=host=https://metrics.solana.com:8086,db=tds,u=testnet_write,p=c4fa841aa918bf8274e3e2a44d77568d9861b3ea

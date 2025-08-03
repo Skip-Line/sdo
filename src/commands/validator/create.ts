@@ -108,7 +108,7 @@ export default class ValidatorCreate extends Command {
         } else if (network === 'mainnet') {
           validatorType = await select({
             message: 'Choose validator type',
-            choices: ['Jito', 'Firedancer', 'Agave'],
+            choices: ['Jito', 'Firedancer', 'Agave', 'Paladin'],
             default: 'Jito',
           })
           commission = await input({

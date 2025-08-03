@@ -3,7 +3,7 @@
   template:
     src: "{{ sdo_user }}.service.j2"
     dest: "/etc/systemd/system/{{ sdo_user }}.service"
-  when: validator_type in ['Agave', 'Jito']
+  when: validator_type in ['Agave', 'Jito', 'Paladin']
   notify: Reload systemd
 
 - name: Copy service file Firedancer

@@ -5,6 +5,8 @@
   when: validator_type == 'Firedancer'
 - import_tasks: install_jito.yml
   when: validator_type == 'Jito' or validator_type == 'Firedancer'
+- import_tasks: install_paladin.yml
+  when: validator_type == 'Paladin'
 - import_tasks: setup_unstaked_identity.yml
 - import_tasks: setup_systemd_service.yml
 - import_tasks: start_systemd_service.yml

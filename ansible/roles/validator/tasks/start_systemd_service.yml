@@ -16,7 +16,7 @@
     service: "{{ sdo_user }}.service"
     state: started
     enabled: true
-  when: validator_type in ['Agave', 'Jito']
+  when: validator_type in ['Agave', 'Jito', 'Paladin']
 
 - name: Start Firedancer service
   systemd:
