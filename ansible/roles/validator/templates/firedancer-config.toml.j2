@@ -33,10 +33,9 @@ dynamic_port_range = "{{ fd_validator_port_start }}-{{ fd_validator_port_end }}"
     require_tower = false
 
 [snapshots]
-    incremental_snapshots = true
-    full_snapshot_interval_slots = 25000
-    incremental_snapshot_interval_slots = 5000
-{% if nvme_disks_over_800gb | length > 2 %}
+    enabled = false
+    minimum_snapshot_download_speed = 30485760
+{% if nvme_disks_over_800gb is defined and nvme_disks_over_800gb | length > 2 %}
     path = "/mnt/snapshots"
 {% endif %}
     

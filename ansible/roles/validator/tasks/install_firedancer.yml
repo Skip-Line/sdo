@@ -31,10 +31,14 @@
 - name: Build fdctl(Will take a while. Be patient)
   become: false
   shell: sudo -iu {{ sdo_user}} bash -c "cd /home/{{ sdo_user }}/firedancer && make -j fdctl"
+  args:
+    creates: "/home/{{ sdo_user }}/firedancer/build/native/gcc/bin/fdctl"
 
 - name: Build solana (Will take a while. Be patient)
   become: false
   shell: sudo -iu {{ sdo_user}} bash -c "cd /home/{{ sdo_user }}/firedancer && make -j solana"
+  args:
+    creates: "/home/{{ sdo_user }}/firedancer/build/native/gcc/bin/solana"
 
 - name: Copy Firedancer config file
   template:
