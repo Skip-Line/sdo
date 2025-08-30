@@ -29,3 +29,11 @@
     option: DefaultLimitNOFILE
     value: "1000000"
   notify: Reload systemd daemon
+
+- name: Change systemd default limit for open files
+  ansible.builtin.ini_file:
+    path: /etc/systemd/system.conf
+    section: Manager
+    option: DefaultLimitMEMLOCK
+    value: "2000000000"
+  notify: Reload systemd daemon
