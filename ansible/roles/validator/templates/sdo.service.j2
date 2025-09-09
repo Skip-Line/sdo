@@ -12,7 +12,7 @@ RestartSec=1
 {% if validator_type == 'Paladin' %}
 Environment=PATH=/home/{{ sdo_user }}/paladin/target/release
 {% else %}
-Environment=PATH=/home/{{ sdo_user }}/.local/share/solana/install/active_release/bin:/home/{{ sdo_user }}/jito/scripts/bin:/home/{{ sdo_user }}/solana/bin
+Environment=PATH=/home/{{ sdo_user }}/jito/scripts/bin
 {% endif %}
 WorkingDirectory=/home/{{ sdo_user }}
 {% if group_names[0] == 'testnet' %}
