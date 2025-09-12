@@ -5,7 +5,7 @@ exec agave-validator \
 --log /home/{{ sdo_user }}/solana-validator.log \
 --ledger /mnt/ledger \
 --accounts /mnt/accounts \
-{% if nvme_disks_over_800gb | length > 2 %}
+{% if nvme_disks_over_800gb is defined and nvme_disks_over_800gb | length > 2 %}
 --snapshots /mnt/snapshots \
 {% endif %}
 {% if group_names[0] == "testnet" %}
