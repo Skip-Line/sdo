@@ -21,7 +21,7 @@
   git:
     repo: https://github.com/jito-foundation/jito-solana.git
     dest: "/home/{{ sdo_user }}/jito"
-    version: "v3.0.1-jito"
+    version: "v3.0.6-jito"
     force: true
 
 - name: Build Jito (Will take a while. Be patient)
