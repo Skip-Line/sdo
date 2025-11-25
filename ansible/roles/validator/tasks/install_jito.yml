@@ -21,8 +21,9 @@
   git:
     repo: https://github.com/jito-foundation/jito-solana.git
     dest: "/home/{{ sdo_user }}/jito"
-    version: "v3.0.10-jito"
+    version: "v3.1.2-jito"
     force: true
+    recursive: yes
 
 - name: Build Jito (Will take a while. Be patient)
   shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{ sdo_user }}/jito/scripts && ./cargo-install-all.sh ."

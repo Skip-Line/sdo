@@ -1,27 +1,42 @@
 ---
-- name: Get Agave required version
-  uri:
-    url: "https://api.solana.org/api/epoch/required_versions?cluster={{ group_names[0] }}"
-    return_content: true
-  register: minimum_required_version
+# - name: Get latest Agave version
+#   uri:
+#     url: "https://api.github.com/repos/anza-xyz/agave/releases?per_page=10"
+#     return_content: true
+#   register: agave_version_response
 
-- set_fact:
-    agave_version: "{{ minimum_required_version.json.data[0].agave_min_version }}"
-    agave_install_script_url: "https://release.anza.xyz/v{{ agave_version }}/install"
-    
-- name: Get install script for Agave
+# - set_fact:
+#     agave_version: >-
+#       {{ 
+      
+#         (agave_version_response.json 
+#           | selectattr('name', 'search', group_names[0], ignorecase=True)
+#           | map(attribute='tag_name')
+#           | list | first)
+              
+#       }}
+
+- name: Get github repo for Agave
   become: false
-  get_url:
-    url: "{{ agave_install_script_url }}"
-    dest: /tmp/agave_install.sh
-    mode: '0755'
+  git:
+    repo: https://github.com/anza-xyz/agave.git
+    dest: "/home/{{ sdo_user }}/agave"
+    version: "v3.1.1"
+    force: true
+    recursive: yes
 
-- name: Install Agave
+- name: Build Agave (Will take a while. Be patient)
+  shell: sudo -iu {{ sdo_user }} bash -c "cd /home/{{ sdo_user }}/agave/scripts && ./cargo-install-all.sh ."
+  args:
+    creates: "/home/{{ sdo_user }}/agave/scripts/bin/agave-validator"
+  
+
+- name: Add Agave to PATH
   become: false
-  shell: /tmp/agave_install.sh
-
-- name: Update agave
-  shell: sudo -iu {{ sdo_user }} bash -c "agave-install update"
+  lineinfile:
+    path: /home/{{ sdo_user }}/.bashrc
+    line: 'export PATH=/home/{{ sdo_user }}/agave/scripts/bin:$PATH'
+    state: present
 
 - name: Copy validator startup script
   template:
@@ -30,5 +45,4 @@
     mode: '0755'
     owner: "{{ sdo_user }}"
     group: "{{ sdo_user }}"
-    
-    
+  when: validator_type == 'Agave'

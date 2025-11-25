@@ -18,9 +18,9 @@
     line: 'GOVERNOR="performance"'
     create: yes
 
-- name: Set scaling governor to performance for all CPUs
-  shell: echo "performance" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-  when: ansible_processor_cores is defined and ansible_processor_cores | int > 0
+# - name: Set scaling governor to performance for all CPUs
+#   shell: echo "performance" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+#   when: ansible_processor_cores is defined and ansible_processor_cores | int > 0
 
 - name: Change systemd default limit for open files
   ansible.builtin.ini_file:

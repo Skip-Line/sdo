@@ -11,6 +11,8 @@ Restart=always
 RestartSec=1
 {% if validator_type == 'Paladin' %}
 Environment=PATH=/home/{{ sdo_user }}/paladin/target/release
+{% elif validator_type == 'Agave' %}
+Environment=PATH=/home/{{ sdo_user }}/agave/scripts/bin
 {% else %}
 Environment=PATH=/home/{{ sdo_user }}/jito/scripts/bin
 {% endif %}
