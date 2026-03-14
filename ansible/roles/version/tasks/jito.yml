@@ -1,0 +1,29 @@
+- name: Get latest Jito version
+  uri:
+    url: "https://api.github.com/repos/jito-foundation/jito-solana/releases?per_page=10"
+    return_content: true
+  register: jito_version_response
+
+- set_fact:
+    jito_version_auto: >-
+      {{ 
+      
+        (jito_version_response.json 
+          | selectattr('name', 'search', group_names[0], ignorecase=True)
+          | map(attribute='tag_name')
+          | list | first)
+              
+      }}
+
+- name: Prompt to confirm or override Jito version
+  pause:
+    prompt: "Selected Jito version is {{ jito_version_auto }}. Press Enter to accept or type an alternative tag:"
+  register: jito_version_prompt
+
+- name: Use user-provided Jito version when supplied
+  set_fact:
+    jito_version: "{{ jito_version_prompt.user_input if (jito_version_prompt.user_input | default('')) != '' else jito_version_auto }}"
+
+- name: Show final Jito version
+  debug:
+    msg: "Using Jito version {{ jito_version }}"

@@ -1,27 +1,10 @@
 ---
-- name: Get latest Jito version
-  uri:
-    url: "https://api.github.com/repos/jito-foundation/jito-solana/releases?per_page=10"
-    return_content: true
-  register: jito_version_response
-
-- set_fact:
-    jito_version: >-
-      {{ 
-      
-        (jito_version_response.json 
-          | selectattr('name', 'search', group_names[0], ignorecase=True)
-          | map(attribute='tag_name')
-          | list | first)
-              
-      }}
-
 - name: Get github repo for Jito
   become: false
   git:
     repo: https://github.com/jito-foundation/jito-solana.git
     dest: "/home/{{ sdo_user }}/jito"
-    version: "v3.1.2-jito"
+    version: "{{ jito_version }}"
     force: true
     recursive: yes
 

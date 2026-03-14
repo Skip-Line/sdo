@@ -1,27 +1,10 @@
 ---
-# - name: Get latest Agave version
-#   uri:
-#     url: "https://api.github.com/repos/anza-xyz/agave/releases?per_page=10"
-#     return_content: true
-#   register: agave_version_response
-
-# - set_fact:
-#     agave_version: >-
-#       {{ 
-      
-#         (agave_version_response.json 
-#           | selectattr('name', 'search', group_names[0], ignorecase=True)
-#           | map(attribute='tag_name')
-#           | list | first)
-              
-#       }}
-
 - name: Get github repo for Agave
   become: false
   git:
     repo: https://github.com/anza-xyz/agave.git
     dest: "/home/{{ sdo_user }}/agave"
-    version: "v3.1.1"
+    version: "{{ agave_version }}"
     force: true
     recursive: yes
 

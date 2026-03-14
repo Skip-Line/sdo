@@ -5,6 +5,7 @@
   gather_facts: true
 
   roles:
+    - { role: version, tags: ['version']}
     - { role: common, tags: ['common']}
     - { role: disks, tags: ['disks']}
     - { role: validator, tags: ['validator']}

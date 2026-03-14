@@ -1,0 +1,7 @@
+---
+- import_tasks: agave.yml
+  when: validator_type == 'Agave'
+- import_tasks: jito.yml
+  when: validator_type == 'Jito'
+- import_tasks: firedancer.yml
+  when: validator_type == 'Firedancer'
